@@ -21,15 +21,14 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"sort"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
 	bloomfilter "github.com/holiman/bloomfilter/v2"
-	"golang.org/x/exp/slices"
 )
 
 var (
@@ -273,7 +272,7 @@ func (dl *diffLayer) Stale() bool {
 
 // Account directly retrieves the account associated with a particular hash in
 // the snapshot slim data format.
-func (dl *diffLayer) Account(hash common.Hash) (*types.SlimAccount, error) {
+func (dl *diffLayer) Account(hash common.Hash) (*Account, error) {
 	data, err := dl.AccountRLP(hash)
 	if err != nil {
 		return nil, err
@@ -281,7 +280,7 @@ func (dl *diffLayer) Account(hash common.Hash) (*types.SlimAccount, error) {
 	if len(data) == 0 { // can be both nil and []byte{}
 		return nil, nil
 	}
-	account := new(types.SlimAccount)
+	account := new(Account)
 	if err := rlp.DecodeBytes(data, account); err != nil {
 		panic(err)
 	}
@@ -293,14 +292,9 @@ func (dl *diffLayer) Account(hash common.Hash) (*types.SlimAccount, error) {
 //
 // Note the returned account is not a copy, please don't modify it.
 func (dl *diffLayer) AccountRLP(hash common.Hash) ([]byte, error) {
-	// Check staleness before reaching further.
-	dl.lock.RLock()
-	if dl.Stale() {
-		dl.lock.RUnlock()
-		return nil, ErrSnapshotStale
-	}
 	// Check the bloom filter first whether there's even a point in reaching into
 	// all the maps in all the layers below
+	dl.lock.RLock()
 	hit := dl.diffed.Contains(accountBloomHasher(hash))
 	if !hit {
 		hit = dl.diffed.Contains(destructBloomHasher(hash))
@@ -367,11 +361,6 @@ func (dl *diffLayer) Storage(accountHash, storageHash common.Hash) ([]byte, erro
 	// Check the bloom filter first whether there's even a point in reaching into
 	// all the maps in all the layers below
 	dl.lock.RLock()
-	// Check staleness before reaching further.
-	if dl.Stale() {
-		dl.lock.RUnlock()
-		return nil, ErrSnapshotStale
-	}
 	hit := dl.diffed.Contains(storageBloomHasher{accountHash, storageHash})
 	if !hit {
 		hit = dl.diffed.Contains(destructBloomHasher(accountHash))
@@ -525,7 +514,7 @@ func (dl *diffLayer) AccountList() []common.Hash {
 			dl.accountList = append(dl.accountList, hash)
 		}
 	}
-	slices.SortFunc(dl.accountList, common.Hash.Less)
+	sort.Sort(hashes(dl.accountList))
 	dl.memory += uint64(len(dl.accountList) * common.HashLength)
 	return dl.accountList
 }
@@ -563,7 +552,7 @@ func (dl *diffLayer) StorageList(accountHash common.Hash) ([]common.Hash, bool) 
 	for k := range storageMap {
 		storageList = append(storageList, k)
 	}
-	slices.SortFunc(storageList, common.Hash.Less)
+	sort.Sort(hashes(storageList))
 	dl.storageList[accountHash] = storageList
 	dl.memory += uint64(len(dl.storageList)*common.HashLength + common.HashLength)
 	return storageList, destructed

@@ -197,10 +197,9 @@ func (f *Freezer) Ancient(kind string, number uint64) ([]byte, error) {
 
 // AncientRange retrieves multiple items in sequence, starting from the index 'start'.
 // It will return
-//   - at most 'count' items,
-//   - if maxBytes is specified: at least 1 item (even if exceeding the maxByteSize),
-//     but will otherwise return as many items as fit into maxByteSize.
-//   - if maxBytes is not specified, 'count' items will be returned if they are present.
+//   - at most 'max' items,
+//   - at least 1 item (even if exceeding the maxByteSize), but will otherwise
+//     return as many items as fit into maxByteSize.
 func (f *Freezer) AncientRange(kind string, start, count, maxBytes uint64) ([][]byte, error) {
 	if table := f.tables[kind]; table != nil {
 		return table.RetrieveItems(start, count, maxBytes)
@@ -435,7 +434,7 @@ func (f *Freezer) MigrateTable(kind string, convert convertLegacyFn) error {
 	// TODO(s1na): This is a sanity-check since as of now no process does tail-deletion. But the migration
 	// process assumes no deletion at tail and needs to be modified to account for that.
 	if table.itemOffset.Load() > 0 || table.itemHidden.Load() > 0 {
-		return errors.New("migration not supported for tail-deleted freezers")
+		return fmt.Errorf("migration not supported for tail-deleted freezers")
 	}
 	ancientsPath := filepath.Dir(table.index.Name())
 	// Set up new dir for the migrated table, the content of which

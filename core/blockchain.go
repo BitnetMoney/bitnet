@@ -23,6 +23,7 @@ import (
 	"io"
 	"math/big"
 	"runtime"
+	"sort"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -47,7 +48,6 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/trie"
-	"golang.org/x/exp/slices"
 )
 
 var (
@@ -87,8 +87,6 @@ var (
 
 	errInsertionInterrupted = errors.New("insertion is interrupted")
 	errChainStopped         = errors.New("blockchain is stopped")
-	errInvalidOldChain      = errors.New("invalid old chain")
-	errInvalidNewChain      = errors.New("invalid new chain")
 )
 
 const (
@@ -130,6 +128,8 @@ const (
 // that's resident in a blockchain.
 type CacheConfig struct {
 	TrieCleanLimit      int           // Memory allowance (MB) to use for caching trie nodes in memory
+	TrieCleanJournal    string        // Disk journal for saving clean cache entries.
+	TrieCleanRejournal  time.Duration // Time interval to dump clean cache to disk periodically
 	TrieCleanNoPrefetch bool          // Whether to disable heuristic state prefetching for followup blocks
 	TrieDirtyLimit      int           // Memory limit (MB) at which to start flushing dirty trie nodes to disk
 	TrieDirtyDisabled   bool          // Whether to disable trie write caching and GC altogether (archive node)
@@ -236,6 +236,7 @@ func NewBlockChain(db ethdb.Database, cacheConfig *CacheConfig, genesis *Genesis
 	// Open trie database with provided config
 	triedb := trie.NewDatabaseWithConfig(db, &trie.Config{
 		Cache:     cacheConfig.TrieCleanLimit,
+		Journal:   cacheConfig.TrieCleanJournal,
 		Preimages: cacheConfig.Preimages,
 	})
 	// Setup the genesis block, commit the provided genesis specification
@@ -364,7 +365,7 @@ func NewBlockChain(db ethdb.Database, cacheConfig *CacheConfig, genesis *Genesis
 	// The first thing the node will do is reconstruct the verification data for
 	// the head block (ethash cache or clique voting snapshot). Might as well do
 	// it in advance.
-	bc.engine.VerifyHeader(bc, bc.CurrentHeader())
+	bc.engine.VerifyHeader(bc, bc.CurrentHeader(), true)
 
 	// Check the current state of the block hashes and make sure that we do not have any of the bad blocks in our chain
 	for hash := range BadHashes {
@@ -408,6 +409,18 @@ func NewBlockChain(db ethdb.Database, cacheConfig *CacheConfig, genesis *Genesis
 	bc.wg.Add(1)
 	go bc.updateFutureBlocks()
 
+	// If periodic cache journal is required, spin it up.
+	if bc.cacheConfig.TrieCleanRejournal > 0 {
+		if bc.cacheConfig.TrieCleanRejournal < time.Minute {
+			log.Warn("Sanitizing invalid trie cache journal time", "provided", bc.cacheConfig.TrieCleanRejournal, "updated", time.Minute)
+			bc.cacheConfig.TrieCleanRejournal = time.Minute
+		}
+		bc.wg.Add(1)
+		go func() {
+			defer bc.wg.Done()
+			bc.triedb.SaveCachePeriodically(bc.cacheConfig.TrieCleanJournal, bc.cacheConfig.TrieCleanRejournal, bc.quit)
+		}()
+	}
 	// Rewind the chain in case of an incompatible config upgrade.
 	if compat, ok := genesisErr.(*params.ConfigCompatError); ok {
 		log.Warn("Rewinding chain to upgrade configuration", "err", compat)
@@ -852,7 +865,7 @@ func (bc *BlockChain) ExportN(w io.Writer, first uint64, last uint64) error {
 			return fmt.Errorf("export failed on #%d: not found", nr)
 		}
 		if nr > first && block.ParentHash() != parentHash {
-			return errors.New("export failed: chain reorg during export")
+			return fmt.Errorf("export failed: chain reorg during export")
 		}
 		parentHash = block.Hash()
 		if err := block.EncodeRLP(w); err != nil {
@@ -969,8 +982,13 @@ func (bc *BlockChain) Stop() {
 		}
 	}
 	// Flush the collected preimages to disk
-	if err := bc.stateCache.TrieDB().Close(); err != nil {
-		log.Error("Failed to close trie db", "err", err)
+	if err := bc.stateCache.TrieDB().CommitPreimages(); err != nil {
+		log.Error("Failed to commit trie preimages", "err", err)
+	}
+	// Ensure all live cached entries be saved into disk, so that we can skip
+	// cache warmup when node restarts.
+	if bc.cacheConfig.TrieCleanJournal != "" {
+		bc.triedb.SaveCache(bc.cacheConfig.TrieCleanJournal)
 	}
 	log.Info("Blockchain stopped")
 }
@@ -995,8 +1013,8 @@ func (bc *BlockChain) procFutureBlocks() {
 		}
 	}
 	if len(blocks) > 0 {
-		slices.SortFunc(blocks, func(a, b *types.Block) bool {
-			return a.NumberU64() < b.NumberU64()
+		sort.Slice(blocks, func(i, j int) bool {
+			return blocks[i].NumberU64() < blocks[j].NumberU64()
 		})
 		// Insert one by one as chain insertion needs contiguous ancestry between blocks
 		for i := range blocks {
@@ -1504,7 +1522,7 @@ func (bc *BlockChain) InsertChain(chain types.Blocks) (int, error) {
 		return 0, errChainStopped
 	}
 	defer bc.chainmu.Unlock()
-	return bc.insertChain(chain, true)
+	return bc.insertChain(chain, true, true)
 }
 
 // insertChain is the internal implementation of InsertChain, which assumes that
@@ -1515,14 +1533,14 @@ func (bc *BlockChain) InsertChain(chain types.Blocks) (int, error) {
 // racey behaviour. If a sidechain import is in progress, and the historic state
 // is imported, but then new canon-head is added before the actual sidechain
 // completes, then the historic state could be pruned again
-func (bc *BlockChain) insertChain(chain types.Blocks, setHead bool) (int, error) {
+func (bc *BlockChain) insertChain(chain types.Blocks, verifySeals, setHead bool) (int, error) {
 	// If the chain is terminating, don't even bother starting up.
 	if bc.insertStopped() {
 		return 0, nil
 	}
 
 	// Start a parallel signature recovery (signer will fluke on fork transition, minimal perf loss)
-	SenderCacher.RecoverFromBlocks(types.MakeSigner(bc.chainConfig, chain[0].Number(), chain[0].Time()), chain)
+	SenderCacher.RecoverFromBlocks(types.MakeSigner(bc.chainConfig, chain[0].Number()), chain)
 
 	var (
 		stats     = insertStats{startTime: mclock.Now()}
@@ -1536,10 +1554,13 @@ func (bc *BlockChain) insertChain(chain types.Blocks, setHead bool) (int, error)
 	}()
 	// Start the parallel header verifier
 	headers := make([]*types.Header, len(chain))
+	seals := make([]bool, len(chain))
+
 	for i, block := range chain {
 		headers[i] = block.Header()
+		seals[i] = verifySeals
 	}
-	abort, results := bc.engine.VerifyHeaders(bc, headers)
+	abort, results := bc.engine.VerifyHeaders(bc, headers, seals)
 	defer close(abort)
 
 	// Peek the error for the first block to decide the directing import logic
@@ -1960,7 +1981,7 @@ func (bc *BlockChain) insertSideChain(block *types.Block, it *insertIterator) (i
 		// memory here.
 		if len(blocks) >= 2048 || memory > 64*1024*1024 {
 			log.Info("Importing heavy sidechain segment", "blocks", len(blocks), "start", blocks[0].NumberU64(), "end", block.NumberU64())
-			if _, err := bc.insertChain(blocks, true); err != nil {
+			if _, err := bc.insertChain(blocks, false, true); err != nil {
 				return 0, err
 			}
 			blocks, memory = blocks[:0], 0
@@ -1974,7 +1995,7 @@ func (bc *BlockChain) insertSideChain(block *types.Block, it *insertIterator) (i
 	}
 	if len(blocks) > 0 {
 		log.Info("Importing sidechain segment", "start", blocks[0].NumberU64(), "end", blocks[len(blocks)-1].NumberU64())
-		return bc.insertChain(blocks, true)
+		return bc.insertChain(blocks, false, true)
 	}
 	return 0, nil
 }
@@ -2017,7 +2038,7 @@ func (bc *BlockChain) recoverAncestors(block *types.Block) (common.Hash, error) 
 		} else {
 			b = bc.GetBlock(hashes[i], numbers[i])
 		}
-		if _, err := bc.insertChain(types.Blocks{b}, false); err != nil {
+		if _, err := bc.insertChain(types.Blocks{b}, false, false); err != nil {
 			return b.ParentHash(), err
 		}
 	}
@@ -2028,17 +2049,16 @@ func (bc *BlockChain) recoverAncestors(block *types.Block) (common.Hash, error) 
 // the processing of a block. These logs are later announced as deleted or reborn.
 func (bc *BlockChain) collectLogs(b *types.Block, removed bool) []*types.Log {
 	receipts := rawdb.ReadRawReceipts(bc.db, b.Hash(), b.NumberU64())
-	if err := receipts.DeriveFields(bc.chainConfig, b.Hash(), b.NumberU64(), b.Time(), b.BaseFee(), b.Transactions()); err != nil {
-		log.Error("Failed to derive block receipts fields", "hash", b.Hash(), "number", b.NumberU64(), "err", err)
-	}
+	receipts.DeriveFields(bc.chainConfig, b.Hash(), b.NumberU64(), b.BaseFee(), b.Transactions())
 
 	var logs []*types.Log
 	for _, receipt := range receipts {
 		for _, log := range receipt.Logs {
+			l := *log
 			if removed {
-				log.Removed = true
+				l.Removed = true
 			}
-			logs = append(logs, log)
+			logs = append(logs, &l)
 		}
 	}
 	return logs
@@ -2080,10 +2100,10 @@ func (bc *BlockChain) reorg(oldHead *types.Header, newHead *types.Block) error {
 		}
 	}
 	if oldBlock == nil {
-		return errInvalidOldChain
+		return errors.New("invalid old chain")
 	}
 	if newBlock == nil {
-		return errInvalidNewChain
+		return errors.New("invalid new chain")
 	}
 	// Both sides of the reorg are at the same number, reduce both until the common
 	// ancestor is found
@@ -2103,11 +2123,11 @@ func (bc *BlockChain) reorg(oldHead *types.Header, newHead *types.Block) error {
 		// Step back with both chains
 		oldBlock = bc.GetBlock(oldBlock.ParentHash(), oldBlock.NumberU64()-1)
 		if oldBlock == nil {
-			return errInvalidOldChain
+			return fmt.Errorf("invalid old chain")
 		}
 		newBlock = bc.GetBlock(newBlock.ParentHash(), newBlock.NumberU64()-1)
 		if newBlock == nil {
-			return errInvalidNewChain
+			return fmt.Errorf("invalid new chain")
 		}
 	}
 
@@ -2222,7 +2242,7 @@ func (bc *BlockChain) InsertBlockWithoutSetHead(block *types.Block) error {
 	}
 	defer bc.chainmu.Unlock()
 
-	_, err := bc.insertChain(types.Blocks{block}, false)
+	_, err := bc.insertChain(types.Blocks{block}, true, false)
 	return err
 }
 
@@ -2442,12 +2462,17 @@ Receipts: %v
 // InsertHeaderChain attempts to insert the given header chain in to the local
 // chain, possibly creating a reorg. If an error is returned, it will return the
 // index number of the failing header as well an error describing what went wrong.
-func (bc *BlockChain) InsertHeaderChain(chain []*types.Header) (int, error) {
+//
+// The verify parameter can be used to fine tune whether nonce verification
+// should be done or not. The reason behind the optional check is because some
+// of the header retrieval mechanisms already need to verify nonces, as well as
+// because nonces can be verified sparsely, not needing to check each.
+func (bc *BlockChain) InsertHeaderChain(chain []*types.Header, checkFreq int) (int, error) {
 	if len(chain) == 0 {
 		return 0, nil
 	}
 	start := time.Now()
-	if i, err := bc.hc.ValidateHeaderChain(chain); err != nil {
+	if i, err := bc.hc.ValidateHeaderChain(chain, checkFreq); err != nil {
 		return i, err
 	}
 
@@ -2472,9 +2497,4 @@ func (bc *BlockChain) SetBlockValidatorAndProcessorForTesting(v Validator, p Pro
 // It is thread-safe and can be called repeatedly without side effects.
 func (bc *BlockChain) SetTrieFlushInterval(interval time.Duration) {
 	bc.flushInterval.Store(int64(interval))
-}
-
-// GetTrieFlushInterval gets the in-memroy tries flush interval
-func (bc *BlockChain) GetTrieFlushInterval() time.Duration {
-	return time.Duration(bc.flushInterval.Load())
 }

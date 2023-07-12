@@ -19,7 +19,6 @@ package tests
 import (
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -204,11 +203,6 @@ func (t *StateTest) Run(subtest StateSubtest, vmconfig vm.Config, snapshotter bo
 	if logs := rlpHash(statedb.Logs()); logs != common.Hash(post.Logs) {
 		return snaps, statedb, fmt.Errorf("post state logs hash mismatch: got %x, want %x", logs, post.Logs)
 	}
-	// Re-init the post-state instance for further operation
-	statedb, err = state.New(root, statedb.Database(), snaps)
-	if err != nil {
-		return nil, nil, err
-	}
 	return snaps, statedb, nil
 }
 
@@ -280,7 +274,9 @@ func (t *StateTest) RunNoVerify(subtest StateSubtest, vmconfig vm.Config, snapsh
 	//   the coinbase gets no txfee, so isn't created, and thus needs to be touched
 	statedb.AddBalance(block.Coinbase(), new(big.Int))
 	// Commit block
-	root, _ := statedb.Commit(config.IsEIP158(block.Number()))
+	statedb.Commit(config.IsEIP158(block.Number()))
+	// And _now_ get the state root
+	root := statedb.IntermediateRoot(config.IsEIP158(block.Number()))
 	return snaps, statedb, root, err
 }
 
@@ -290,7 +286,7 @@ func (t *StateTest) gasLimit(subtest StateSubtest) uint64 {
 
 func MakePreState(db ethdb.Database, accounts core.GenesisAlloc, snapshotter bool) (*snapshot.Tree, *state.StateDB) {
 	sdb := state.NewDatabaseWithConfig(db, &trie.Config{Preimages: true})
-	statedb, _ := state.New(types.EmptyRootHash, sdb, nil)
+	statedb, _ := state.New(common.Hash{}, sdb, nil)
 	for addr, a := range accounts {
 		statedb.SetCode(addr, a.Code)
 		statedb.SetNonce(addr, a.Nonce)
@@ -399,7 +395,7 @@ func (tx *stTransaction) toMessage(ps stPostState, baseFee *big.Int) (*core.Mess
 			tx.MaxFeePerGas)
 	}
 	if gasPrice == nil {
-		return nil, errors.New("no gas price provided")
+		return nil, fmt.Errorf("no gas price provided")
 	}
 
 	msg := &core.Message{

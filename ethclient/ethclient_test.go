@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"math/big"
 	"reflect"
 	"testing"
@@ -54,7 +55,7 @@ var (
 )
 
 func TestToFilterArg(t *testing.T) {
-	blockHashErr := errors.New("cannot specify both BlockHash and FromBlock/ToBlock")
+	blockHashErr := fmt.Errorf("cannot specify both BlockHash and FromBlock/ToBlock")
 	addresses := []common.Address{
 		common.HexToAddress("0xD36722ADeC3EdCB29c8e7b5a47f352D701393462"),
 	}
@@ -220,6 +221,7 @@ func newTestBackend(t *testing.T) (*node.Node, []*types.Block) {
 	}
 	// Create Ethereum Service
 	config := &ethconfig.Config{Genesis: genesis}
+	config.Ethash.PowMode = ethash.ModeFake
 	ethservice, err := eth.New(n, config)
 	if err != nil {
 		t.Fatalf("can't create new ethereum service: %v", err)
@@ -250,7 +252,7 @@ func generateTestChain() []*types.Block {
 
 func TestEthClient(t *testing.T) {
 	backend, chain := newTestBackend(t)
-	client := backend.Attach()
+	client, _ := backend.Attach()
 	defer backend.Close()
 	defer client.Close()
 

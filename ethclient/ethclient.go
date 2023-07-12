@@ -41,7 +41,6 @@ func Dial(rawurl string) (*Client, error) {
 	return DialContext(context.Background(), rawurl)
 }
 
-// DialContext connects a client to the given URL with context.
 func DialContext(ctx context.Context, rawurl string) (*Client, error) {
 	c, err := rpc.DialContext(ctx, rawurl)
 	if err != nil {
@@ -55,14 +54,8 @@ func NewClient(c *rpc.Client) *Client {
 	return &Client{c}
 }
 
-// Close closes the underlying RPC connection.
 func (ec *Client) Close() {
 	ec.c.Close()
-}
-
-// Client gets the underlying RPC client.
-func (ec *Client) Client() *rpc.Client {
-	return ec.c
 }
 
 // Blockchain Access
@@ -138,16 +131,16 @@ func (ec *Client) getBlock(ctx context.Context, method string, args ...interface
 	}
 	// Quick-verify transaction and uncle lists. This mostly helps with debugging the server.
 	if head.UncleHash == types.EmptyUncleHash && len(body.UncleHashes) > 0 {
-		return nil, errors.New("server returned non-empty uncle list but block header indicates no uncles")
+		return nil, fmt.Errorf("server returned non-empty uncle list but block header indicates no uncles")
 	}
 	if head.UncleHash != types.EmptyUncleHash && len(body.UncleHashes) == 0 {
-		return nil, errors.New("server returned empty uncle list but block header indicates uncles")
+		return nil, fmt.Errorf("server returned empty uncle list but block header indicates uncles")
 	}
 	if head.TxHash == types.EmptyTxsHash && len(body.Transactions) > 0 {
-		return nil, errors.New("server returned non-empty transaction list but block header indicates no transactions")
+		return nil, fmt.Errorf("server returned non-empty transaction list but block header indicates no transactions")
 	}
 	if head.TxHash != types.EmptyTxsHash && len(body.Transactions) == 0 {
-		return nil, errors.New("server returned empty transaction list but block header indicates transactions")
+		return nil, fmt.Errorf("server returned empty transaction list but block header indicates transactions")
 	}
 	// Load uncles because they are not included in the block response.
 	var uncles []*types.Header
@@ -232,7 +225,7 @@ func (ec *Client) TransactionByHash(ctx context.Context, hash common.Hash) (tx *
 	} else if json == nil {
 		return nil, false, ethereum.NotFound
 	} else if _, r, _ := json.tx.RawSignatureValues(); r == nil {
-		return nil, false, errors.New("server returned transaction without signature")
+		return nil, false, fmt.Errorf("server returned transaction without signature")
 	}
 	if json.From != nil && json.BlockHash != nil {
 		setSenderFromServer(json.tx, *json.From, *json.BlockHash)
@@ -284,7 +277,7 @@ func (ec *Client) TransactionInBlock(ctx context.Context, blockHash common.Hash,
 	if json == nil {
 		return nil, ethereum.NotFound
 	} else if _, r, _ := json.tx.RawSignatureValues(); r == nil {
-		return nil, errors.New("server returned transaction without signature")
+		return nil, fmt.Errorf("server returned transaction without signature")
 	}
 	if json.From != nil && json.BlockHash != nil {
 		setSenderFromServer(json.tx, *json.From, *json.BlockHash)
@@ -421,7 +414,7 @@ func toFilterArg(q ethereum.FilterQuery) (interface{}, error) {
 	if q.BlockHash != nil {
 		arg["blockHash"] = *q.BlockHash
 		if q.FromBlock != nil || q.ToBlock != nil {
-			return nil, errors.New("cannot specify both BlockHash and FromBlock/ToBlock")
+			return nil, fmt.Errorf("cannot specify both BlockHash and FromBlock/ToBlock")
 		}
 	} else {
 		if q.FromBlock == nil {
@@ -592,15 +585,19 @@ func toBlockNumArg(number *big.Int) string {
 	if number == nil {
 		return "latest"
 	}
-	if number.Sign() >= 0 {
-		return hexutil.EncodeBig(number)
+	pending := big.NewInt(-1)
+	if number.Cmp(pending) == 0 {
+		return "pending"
 	}
-	// It's negative.
-	if number.IsInt64() {
-		return rpc.BlockNumber(number.Int64()).String()
+	finalized := big.NewInt(int64(rpc.FinalizedBlockNumber))
+	if number.Cmp(finalized) == 0 {
+		return "finalized"
 	}
-	// It's negative and large, which is invalid.
-	return fmt.Sprintf("<invalid %d>", number)
+	safe := big.NewInt(int64(rpc.SafeBlockNumber))
+	if number.Cmp(safe) == 0 {
+		return "safe"
+	}
+	return hexutil.EncodeBig(number)
 }
 
 func toCallArg(msg ethereum.CallMsg) interface{} {

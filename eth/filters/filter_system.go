@@ -20,7 +20,6 @@ package filters
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -332,7 +331,7 @@ func (es *EventSystem) SubscribeLogs(crit ethereum.FilterQuery, logs chan []*typ
 	if from >= 0 && to == rpc.LatestBlockNumber {
 		return es.subscribeLogs(crit, logs), nil
 	}
-	return nil, errors.New("invalid from and to block combination: from > to")
+	return nil, fmt.Errorf("invalid from and to block combination: from > to")
 }
 
 // subscribeMinedPendingLogs creates a subscription that returned mined and
@@ -438,6 +437,15 @@ func (es *EventSystem) handlePendingLogs(filters filterIndex, ev []*types.Log) {
 	}
 	for _, f := range filters[PendingLogsSubscription] {
 		matchedLogs := filterLogs(ev, nil, f.logsCrit.ToBlock, f.logsCrit.Addresses, f.logsCrit.Topics)
+		if len(matchedLogs) > 0 {
+			f.logs <- matchedLogs
+		}
+	}
+}
+
+func (es *EventSystem) handleRemovedLogs(filters filterIndex, ev core.RemovedLogsEvent) {
+	for _, f := range filters[LogsSubscription] {
+		matchedLogs := filterLogs(ev.Logs, f.logsCrit.FromBlock, f.logsCrit.ToBlock, f.logsCrit.Addresses, f.logsCrit.Topics)
 		if len(matchedLogs) > 0 {
 			f.logs <- matchedLogs
 		}
@@ -564,7 +572,7 @@ func (es *EventSystem) eventLoop() {
 		case ev := <-es.logsCh:
 			es.handleLogs(index, ev)
 		case ev := <-es.rmLogsCh:
-			es.handleLogs(index, ev.Logs)
+			es.handleRemovedLogs(index, ev)
 		case ev := <-es.pendingLogsCh:
 			es.handlePendingLogs(index, ev)
 		case ev := <-es.chainCh:

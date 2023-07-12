@@ -19,6 +19,7 @@ package eth
 import (
 	"fmt"
 	"math/big"
+	"sync/atomic"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -51,7 +52,7 @@ func (h *ethHandler) PeerInfo(id enode.ID) interface{} {
 // AcceptTxs retrieves whether transaction processing is enabled on the node
 // or if inbound transactions should simply be dropped.
 func (h *ethHandler) AcceptTxs() bool {
-	return h.acceptTxs.Load()
+	return atomic.LoadUint32(&h.acceptTxs) == 1
 }
 
 // Handle is invoked from a peer's message handler when it receives a new remote
@@ -134,7 +135,7 @@ func (h *ethHandler) handleBlockBroadcast(peer *eth.Peer, block *types.Block, td
 	// Update the peer's total difficulty if better than the previous
 	if _, td := peer.Head(); trueTD.Cmp(td) > 0 {
 		peer.SetHead(trueHead, trueTD)
-		h.chainSync.handlePeerEvent()
+		h.chainSync.handlePeerEvent(peer)
 	}
 	return nil
 }

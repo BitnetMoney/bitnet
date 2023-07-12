@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"sort"
 	"sync"
 	"time"
 
@@ -31,7 +32,6 @@ import (
 	"github.com/ethereum/go-ethereum/p2p/enode"
 	"github.com/ethereum/go-ethereum/p2p/enr"
 	"github.com/ethereum/go-ethereum/rlp"
-	"golang.org/x/exp/slices"
 )
 
 var (
@@ -375,7 +375,7 @@ func countMatchingProtocols(protocols []Protocol, caps []Cap) int {
 
 // matchProtocols creates structures for matching named subprotocols.
 func matchProtocols(protocols []Protocol, caps []Cap, rw MsgReadWriter) map[string]*protoRW {
-	slices.SortFunc(caps, Cap.Less)
+	sort.Sort(capsByNameAndVersion(caps))
 	offset := baseProtocolLength
 	result := make(map[string]*protoRW)
 
@@ -510,7 +510,7 @@ func (p *Peer) Info() *PeerInfo {
 		ID:        p.ID().String(),
 		Name:      p.Fullname(),
 		Caps:      caps,
-		Protocols: make(map[string]interface{}, len(p.running)),
+		Protocols: make(map[string]interface{}),
 	}
 	if p.Node().Seq() > 0 {
 		info.ENR = p.Node().String()

@@ -33,11 +33,7 @@ import (
 // If the trie does not contain a value for key, the returned proof contains all
 // nodes of the longest existing prefix of the key (at least the root node), ending
 // with the node that proves the absence of the key.
-func (t *Trie) Prove(key []byte, proofDb ethdb.KeyValueWriter) error {
-	// Short circuit if the trie is already committed and not usable.
-	if t.committed {
-		return ErrCommitted
-	}
+func (t *Trie) Prove(key []byte, fromLevel uint, proofDb ethdb.KeyValueWriter) error {
 	// Collect all nodes on the path to key.
 	var (
 		prefix []byte
@@ -68,15 +64,12 @@ func (t *Trie) Prove(key []byte, proofDb ethdb.KeyValueWriter) error {
 			// loaded blob will be tracked, while it's not required here since
 			// all loaded nodes won't be linked to trie at all and track nodes
 			// may lead to out-of-memory issue.
-			blob, err := t.reader.node(prefix, common.BytesToHash(n))
+			var err error
+			tn, err = t.reader.node(prefix, common.BytesToHash(n))
 			if err != nil {
 				log.Error("Unhandled trie error in Trie.Prove", "err", err)
 				return err
 			}
-			// The raw-blob format nodes are loaded either from the
-			// clean cache or the database, they are all in their own
-			// copy and safe to use unsafe decoder.
-			tn = mustDecodeNodeUnsafe(n, blob)
 		default:
 			panic(fmt.Sprintf("%T: invalid node: %v", tn, tn))
 		}
@@ -85,6 +78,10 @@ func (t *Trie) Prove(key []byte, proofDb ethdb.KeyValueWriter) error {
 	defer returnHasherToPool(hasher)
 
 	for i, n := range nodes {
+		if fromLevel > 0 {
+			fromLevel--
+			continue
+		}
 		var hn node
 		n, hn = hasher.proofHash(n)
 		if hash, ok := hn.(hashNode); ok || i == 0 {
@@ -107,8 +104,8 @@ func (t *Trie) Prove(key []byte, proofDb ethdb.KeyValueWriter) error {
 // If the trie does not contain a value for key, the returned proof contains all
 // nodes of the longest existing prefix of the key (at least the root node), ending
 // with the node that proves the absence of the key.
-func (t *StateTrie) Prove(key []byte, proofDb ethdb.KeyValueWriter) error {
-	return t.trie.Prove(key, proofDb)
+func (t *StateTrie) Prove(key []byte, fromLevel uint, proofDb ethdb.KeyValueWriter) error {
+	return t.trie.Prove(key, fromLevel, proofDb)
 }
 
 // VerifyProof checks merkle proofs. The given proof must contain the value for

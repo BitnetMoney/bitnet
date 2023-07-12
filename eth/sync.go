@@ -19,6 +19,7 @@ package eth
 import (
 	"errors"
 	"math/big"
+	"sync/atomic"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -89,7 +90,7 @@ func newChainSyncer(handler *handler) *chainSyncer {
 // handlePeerEvent notifies the syncer about a change in the peer set.
 // This is called for new peers and every time a peer announces a new
 // chain head.
-func (cs *chainSyncer) handlePeerEvent() bool {
+func (cs *chainSyncer) handlePeerEvent(peer *eth.Peer) bool {
 	select {
 	case cs.peerEventCh <- struct{}{}:
 		return true
@@ -204,7 +205,7 @@ func peerToSyncOp(mode downloader.SyncMode, p *eth.Peer) *chainSyncOp {
 
 func (cs *chainSyncer) modeAndLocalHead() (downloader.SyncMode, *big.Int) {
 	// If we're in snap sync mode, return that directly
-	if cs.handler.snapSync.Load() {
+	if atomic.LoadUint32(&cs.handler.snapSync) == 1 {
 		block := cs.handler.chain.CurrentSnapBlock()
 		td := cs.handler.chain.GetTd(block.Hash(), block.Number.Uint64())
 		return downloader.SnapSync, td
@@ -255,15 +256,20 @@ func (h *handler) doSync(op *chainSyncOp) error {
 	if err != nil {
 		return err
 	}
-	if h.snapSync.Load() {
+	if atomic.LoadUint32(&h.snapSync) == 1 {
 		log.Info("Snap sync complete, auto disabling")
-		h.snapSync.Store(false)
+		atomic.StoreUint32(&h.snapSync, 0)
 	}
-	// If we've successfully finished a sync cycle, enable accepting transactions
-	// from the network.
-	h.acceptTxs.Store(true)
-
+	// If we've successfully finished a sync cycle and passed any required checkpoint,
+	// enable accepting transactions from the network.
 	head := h.chain.CurrentBlock()
+	if head.Number.Uint64() >= h.checkpointNumber {
+		// Checkpoint passed, sanity check the timestamp to have a fallback mechanism
+		// for non-checkpointed (number = 0) private networks.
+		if head.Time >= uint64(time.Now().AddDate(0, -1, 0).Unix()) {
+			atomic.StoreUint32(&h.acceptTxs, 1)
+		}
+	}
 	if head.Number.Uint64() > 0 {
 		// We've completed a sync cycle, notify all peers of new state. This path is
 		// essential in star-topology networks where a gateway node needs to notify

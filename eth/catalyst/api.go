@@ -20,7 +20,6 @@ package catalyst
 import (
 	"errors"
 	"fmt"
-	"math/big"
 	"sync"
 	"time"
 
@@ -166,10 +165,10 @@ func NewConsensusAPI(eth *eth.Ethereum) *ConsensusAPI {
 func (api *ConsensusAPI) ForkchoiceUpdatedV1(update engine.ForkchoiceStateV1, payloadAttributes *engine.PayloadAttributes) (engine.ForkChoiceResponse, error) {
 	if payloadAttributes != nil {
 		if payloadAttributes.Withdrawals != nil {
-			return engine.STATUS_INVALID, engine.InvalidParams.With(errors.New("withdrawals not supported in V1"))
+			return engine.STATUS_INVALID, engine.InvalidParams.With(fmt.Errorf("withdrawals not supported in V1"))
 		}
-		if api.eth.BlockChain().Config().IsShanghai(api.eth.BlockChain().Config().LondonBlock, payloadAttributes.Timestamp) {
-			return engine.STATUS_INVALID, engine.InvalidParams.With(errors.New("forkChoiceUpdateV1 called post-shanghai"))
+		if api.eth.BlockChain().Config().IsShanghai(payloadAttributes.Timestamp) {
+			return engine.STATUS_INVALID, engine.InvalidParams.With(fmt.Errorf("forkChoiceUpdateV1 called post-shanghai"))
 		}
 	}
 	return api.forkchoiceUpdated(update, payloadAttributes)
@@ -186,7 +185,7 @@ func (api *ConsensusAPI) ForkchoiceUpdatedV2(update engine.ForkchoiceStateV1, pa
 }
 
 func (api *ConsensusAPI) verifyPayloadAttributes(attr *engine.PayloadAttributes) error {
-	if !api.eth.BlockChain().Config().IsShanghai(api.eth.BlockChain().Config().LondonBlock, attr.Timestamp) {
+	if !api.eth.BlockChain().Config().IsShanghai(attr.Timestamp) {
 		// Reject payload attributes with withdrawals before shanghai
 		if attr.Withdrawals != nil {
 			return errors.New("withdrawals before shanghai")
@@ -386,7 +385,7 @@ func (api *ConsensusAPI) ExchangeTransitionConfigurationV1(config engine.Transit
 				TerminalBlockNumber:     config.TerminalBlockNumber,
 			}, nil
 		}
-		return nil, errors.New("invalid terminal block hash")
+		return nil, fmt.Errorf("invalid terminal block hash")
 	}
 	return &engine.TransitionConfigurationV1{TerminalTotalDifficulty: (*hexutil.Big)(ttd)}, nil
 }
@@ -407,22 +406,7 @@ func (api *ConsensusAPI) GetPayloadV2(payloadID engine.PayloadID) (*engine.Execu
 
 func (api *ConsensusAPI) getPayload(payloadID engine.PayloadID) (*engine.ExecutionPayloadEnvelope, error) {
 	log.Trace("Engine API request received", "method", "GetPayload", "id", payloadID)
-	data := api.localBlocks.get(payloadID, false)
-	if data == nil {
-		return nil, engine.UnknownPayload
-	}
-	return data, nil
-}
-
-// getFullPayload returns a cached payload by it. The difference is that this
-// function always expects a non-empty payload, but can also return empty one
-// if no transaction is executable.
-//
-// Note, this function is not a part of standard engine API, meant to be used
-// by consensus client mock in dev mode.
-func (api *ConsensusAPI) getFullPayload(payloadID engine.PayloadID) (*engine.ExecutionPayloadEnvelope, error) {
-	log.Trace("Engine API request received", "method", "GetFullPayload", "id", payloadID)
-	data := api.localBlocks.get(payloadID, true)
+	data := api.localBlocks.get(payloadID)
 	if data == nil {
 		return nil, engine.UnknownPayload
 	}
@@ -432,19 +416,19 @@ func (api *ConsensusAPI) getFullPayload(payloadID engine.PayloadID) (*engine.Exe
 // NewPayloadV1 creates an Eth1 block, inserts it in the chain, and returns the status of the chain.
 func (api *ConsensusAPI) NewPayloadV1(params engine.ExecutableData) (engine.PayloadStatusV1, error) {
 	if params.Withdrawals != nil {
-		return engine.PayloadStatusV1{Status: engine.INVALID}, engine.InvalidParams.With(errors.New("withdrawals not supported in V1"))
+		return engine.PayloadStatusV1{Status: engine.INVALID}, engine.InvalidParams.With(fmt.Errorf("withdrawals not supported in V1"))
 	}
 	return api.newPayload(params)
 }
 
 // NewPayloadV2 creates an Eth1 block, inserts it in the chain, and returns the status of the chain.
 func (api *ConsensusAPI) NewPayloadV2(params engine.ExecutableData) (engine.PayloadStatusV1, error) {
-	if api.eth.BlockChain().Config().IsShanghai(new(big.Int).SetUint64(params.Number), params.Timestamp) {
+	if api.eth.BlockChain().Config().IsShanghai(params.Timestamp) {
 		if params.Withdrawals == nil {
-			return engine.PayloadStatusV1{Status: engine.INVALID}, engine.InvalidParams.With(errors.New("nil withdrawals post-shanghai"))
+			return engine.PayloadStatusV1{Status: engine.INVALID}, engine.InvalidParams.With(fmt.Errorf("nil withdrawals post-shanghai"))
 		}
 	} else if params.Withdrawals != nil {
-		return engine.PayloadStatusV1{Status: engine.INVALID}, engine.InvalidParams.With(errors.New("non-nil withdrawals pre-shanghai"))
+		return engine.PayloadStatusV1{Status: engine.INVALID}, engine.InvalidParams.With(fmt.Errorf("non-nil withdrawals pre-shanghai"))
 	}
 	return api.newPayload(params)
 }
@@ -730,8 +714,8 @@ func (api *ConsensusAPI) ExchangeCapabilities([]string) []string {
 	return caps
 }
 
-// GetPayloadBodiesByHashV1 implements engine_getPayloadBodiesByHashV1 which
-// allows for retrieval of a list of block bodies by the engine api.
+// GetPayloadBodiesV1 implements engine_getPayloadBodiesByHashV1 which allows for retrieval of a list
+// of block bodies by the engine api.
 func (api *ConsensusAPI) GetPayloadBodiesByHashV1(hashes []common.Hash) []*engine.ExecutionPayloadBodyV1 {
 	var bodies = make([]*engine.ExecutionPayloadBodyV1, len(hashes))
 	for i, hash := range hashes {
@@ -741,8 +725,8 @@ func (api *ConsensusAPI) GetPayloadBodiesByHashV1(hashes []common.Hash) []*engin
 	return bodies
 }
 
-// GetPayloadBodiesByRangeV1 implements engine_getPayloadBodiesByRangeV1 which
-// allows for retrieval of a range of block bodies by the engine api.
+// GetPayloadBodiesByRangeV1 implements engine_getPayloadBodiesByRangeV1 which allows for retrieval of a range
+// of block bodies by the engine api.
 func (api *ConsensusAPI) GetPayloadBodiesByRangeV1(start, count hexutil.Uint64) ([]*engine.ExecutionPayloadBodyV1, error) {
 	if start == 0 || count == 0 {
 		return nil, engine.InvalidParams.With(fmt.Errorf("invalid start or count, start: %v count: %v", start, count))
@@ -768,19 +752,23 @@ func getBody(block *types.Block) *engine.ExecutionPayloadBodyV1 {
 	if block == nil {
 		return nil
 	}
+
 	var (
 		body        = block.Body()
 		txs         = make([]hexutil.Bytes, len(body.Transactions))
 		withdrawals = body.Withdrawals
 	)
+
 	for j, tx := range body.Transactions {
 		data, _ := tx.MarshalBinary()
 		txs[j] = hexutil.Bytes(data)
 	}
+
 	// Post-shanghai withdrawals MUST be set to empty slice instead of nil
 	if withdrawals == nil && block.Header().WithdrawalsHash != nil {
 		withdrawals = make([]*types.Withdrawal, 0)
 	}
+
 	return &engine.ExecutionPayloadBodyV1{
 		TransactionData: txs,
 		Withdrawals:     withdrawals,

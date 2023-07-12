@@ -22,6 +22,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math/big"
+	"sort"
 	"sync"
 	"testing"
 	"time"
@@ -35,9 +36,7 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/trie"
-	"github.com/ethereum/go-ethereum/trie/trienode"
 	"golang.org/x/crypto/sha3"
-	"golang.org/x/exp/slices"
 )
 
 func TestHashing(t *testing.T) {
@@ -127,9 +126,9 @@ type testPeer struct {
 	remote        *Syncer
 	logger        log.Logger
 	accountTrie   *trie.Trie
-	accountValues []*kv
+	accountValues entrySlice
 	storageTries  map[common.Hash]*trie.Trie
-	storageValues map[common.Hash][]*kv
+	storageValues map[common.Hash]entrySlice
 
 	accountRequestHandler accountHandlerFunc
 	storageRequestHandler storageHandlerFunc
@@ -273,12 +272,12 @@ func createAccountRequestResponse(t *testPeer, root common.Hash, origin common.H
 	// Actually, we need to supply proofs either way! This seems to be an implementation
 	// quirk in go-ethereum
 	proof := light.NewNodeSet()
-	if err := t.accountTrie.Prove(origin[:], proof); err != nil {
+	if err := t.accountTrie.Prove(origin[:], 0, proof); err != nil {
 		t.logger.Error("Could not prove inexistence of origin", "origin", origin, "error", err)
 	}
 	if len(keys) > 0 {
 		lastK := (keys[len(keys)-1])[:]
-		if err := t.accountTrie.Prove(lastK, proof); err != nil {
+		if err := t.accountTrie.Prove(lastK, 0, proof); err != nil {
 			t.logger.Error("Could not prove last item", "error", err)
 		}
 	}
@@ -358,12 +357,12 @@ func createStorageRequestResponse(t *testPeer, root common.Hash, accounts []comm
 			// Here's a potential gotcha: when constructing the proof, we cannot
 			// use the 'origin' slice directly, but must use the full 32-byte
 			// hash form.
-			if err := stTrie.Prove(originHash[:], proof); err != nil {
+			if err := stTrie.Prove(originHash[:], 0, proof); err != nil {
 				t.logger.Error("Could not prove inexistence of origin", "origin", originHash, "error", err)
 			}
 			if len(keys) > 0 {
 				lastK := (keys[len(keys)-1])[:]
-				if err := stTrie.Prove(lastK, proof); err != nil {
+				if err := stTrie.Prove(lastK, 0, proof); err != nil {
 					t.logger.Error("Could not prove last item", "error", err)
 				}
 			}
@@ -416,13 +415,13 @@ func createStorageRequestResponseAlwaysProve(t *testPeer, root common.Hash, acco
 			// Here's a potential gotcha: when constructing the proof, we cannot
 			// use the 'origin' slice directly, but must use the full 32-byte
 			// hash form.
-			if err := stTrie.Prove(origin[:], proof); err != nil {
+			if err := stTrie.Prove(origin[:], 0, proof); err != nil {
 				t.logger.Error("Could not prove inexistence of origin", "origin", origin,
 					"error", err)
 			}
 			if len(keys) > 0 {
 				lastK := (keys[len(keys)-1])[:]
-				if err := stTrie.Prove(lastK, proof); err != nil {
+				if err := stTrie.Prove(lastK, 0, proof); err != nil {
 					t.logger.Error("Could not prove last item", "error", err)
 				}
 			}
@@ -594,12 +593,12 @@ func TestSyncBloatedProof(t *testing.T) {
 		}
 		// The proofs
 		proof := light.NewNodeSet()
-		if err := t.accountTrie.Prove(origin[:], proof); err != nil {
+		if err := t.accountTrie.Prove(origin[:], 0, proof); err != nil {
 			t.logger.Error("Could not prove origin", "origin", origin, "error", err)
 		}
 		// The bloat: add proof of every single element
 		for _, entry := range t.accountValues {
-			if err := t.accountTrie.Prove(entry.k, proof); err != nil {
+			if err := t.accountTrie.Prove(entry.k, 0, proof); err != nil {
 				t.logger.Error("Could not prove item", "error", err)
 			}
 		}
@@ -1321,9 +1320,12 @@ type kv struct {
 	k, v []byte
 }
 
-func (k *kv) less(other *kv) bool {
-	return bytes.Compare(k.k, other.k) < 0
-}
+// Some helpers for sorting
+type entrySlice []*kv
+
+func (p entrySlice) Len() int           { return len(p) }
+func (p entrySlice) Less(i, j int) bool { return bytes.Compare(p[i].k, p[j].k) < 0 }
+func (p entrySlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 func key32(i uint64) []byte {
 	key := make([]byte, 32)
@@ -1364,11 +1366,11 @@ func getCodeByHash(hash common.Hash) []byte {
 }
 
 // makeAccountTrieNoStorage spits out a trie, along with the leafs
-func makeAccountTrieNoStorage(n int) (string, *trie.Trie, []*kv) {
+func makeAccountTrieNoStorage(n int) (string, *trie.Trie, entrySlice) {
 	var (
 		db      = trie.NewDatabase(rawdb.NewMemoryDatabase())
 		accTrie = trie.NewEmpty(db)
-		entries []*kv
+		entries entrySlice
 	)
 	for i := uint64(1); i <= uint64(n); i++ {
 		value, _ := rlp.EncodeToBytes(&types.StateAccount{
@@ -1382,12 +1384,12 @@ func makeAccountTrieNoStorage(n int) (string, *trie.Trie, []*kv) {
 		accTrie.MustUpdate(elem.k, elem.v)
 		entries = append(entries, elem)
 	}
-	slices.SortFunc(entries, (*kv).less)
+	sort.Sort(entries)
 
 	// Commit the state changes into db and re-create the trie
 	// for accessing later.
-	root, nodes, _ := accTrie.Commit(false)
-	db.Update(root, types.EmptyRootHash, trienode.NewWithNodeSet(nodes), nil)
+	root, nodes := accTrie.Commit(false)
+	db.Update(trie.NewWithNodeSet(nodes))
 
 	accTrie, _ = trie.New(trie.StateTrieID(root), db)
 	return db.Scheme(), accTrie, entries
@@ -1396,9 +1398,9 @@ func makeAccountTrieNoStorage(n int) (string, *trie.Trie, []*kv) {
 // makeBoundaryAccountTrie constructs an account trie. Instead of filling
 // accounts normally, this function will fill a few accounts which have
 // boundary hash.
-func makeBoundaryAccountTrie(n int) (string, *trie.Trie, []*kv) {
+func makeBoundaryAccountTrie(n int) (string, *trie.Trie, entrySlice) {
 	var (
-		entries    []*kv
+		entries    entrySlice
 		boundaries []common.Hash
 
 		db      = trie.NewDatabase(rawdb.NewMemoryDatabase())
@@ -1444,12 +1446,12 @@ func makeBoundaryAccountTrie(n int) (string, *trie.Trie, []*kv) {
 		accTrie.MustUpdate(elem.k, elem.v)
 		entries = append(entries, elem)
 	}
-	slices.SortFunc(entries, (*kv).less)
+	sort.Sort(entries)
 
 	// Commit the state changes into db and re-create the trie
 	// for accessing later.
-	root, nodes, _ := accTrie.Commit(false)
-	db.Update(root, types.EmptyRootHash, trienode.NewWithNodeSet(nodes), nil)
+	root, nodes := accTrie.Commit(false)
+	db.Update(trie.NewWithNodeSet(nodes))
 
 	accTrie, _ = trie.New(trie.StateTrieID(root), db)
 	return db.Scheme(), accTrie, entries
@@ -1457,15 +1459,15 @@ func makeBoundaryAccountTrie(n int) (string, *trie.Trie, []*kv) {
 
 // makeAccountTrieWithStorageWithUniqueStorage creates an account trie where each accounts
 // has a unique storage set.
-func makeAccountTrieWithStorageWithUniqueStorage(accounts, slots int, code bool) (string, *trie.Trie, []*kv, map[common.Hash]*trie.Trie, map[common.Hash][]*kv) {
+func makeAccountTrieWithStorageWithUniqueStorage(accounts, slots int, code bool) (string, *trie.Trie, entrySlice, map[common.Hash]*trie.Trie, map[common.Hash]entrySlice) {
 	var (
 		db             = trie.NewDatabase(rawdb.NewMemoryDatabase())
 		accTrie        = trie.NewEmpty(db)
-		entries        []*kv
+		entries        entrySlice
 		storageRoots   = make(map[common.Hash]common.Hash)
 		storageTries   = make(map[common.Hash]*trie.Trie)
-		storageEntries = make(map[common.Hash][]*kv)
-		nodes          = trienode.NewMergedNodeSet()
+		storageEntries = make(map[common.Hash]entrySlice)
+		nodes          = trie.NewMergedNodeSet()
 	)
 	// Create n accounts in the trie
 	for i := uint64(1); i <= uint64(accounts); i++ {
@@ -1491,14 +1493,14 @@ func makeAccountTrieWithStorageWithUniqueStorage(accounts, slots int, code bool)
 		storageRoots[common.BytesToHash(key)] = stRoot
 		storageEntries[common.BytesToHash(key)] = stEntries
 	}
-	slices.SortFunc(entries, (*kv).less)
+	sort.Sort(entries)
 
 	// Commit account trie
-	root, set, _ := accTrie.Commit(true)
+	root, set := accTrie.Commit(true)
 	nodes.Merge(set)
 
 	// Commit gathered dirty nodes into database
-	db.Update(root, types.EmptyRootHash, nodes, nil)
+	db.Update(nodes)
 
 	// Re-create tries with new root
 	accTrie, _ = trie.New(trie.StateTrieID(root), db)
@@ -1512,15 +1514,15 @@ func makeAccountTrieWithStorageWithUniqueStorage(accounts, slots int, code bool)
 }
 
 // makeAccountTrieWithStorage spits out a trie, along with the leafs
-func makeAccountTrieWithStorage(accounts, slots int, code, boundary bool) (string, *trie.Trie, []*kv, map[common.Hash]*trie.Trie, map[common.Hash][]*kv) {
+func makeAccountTrieWithStorage(accounts, slots int, code, boundary bool) (string, *trie.Trie, entrySlice, map[common.Hash]*trie.Trie, map[common.Hash]entrySlice) {
 	var (
 		db             = trie.NewDatabase(rawdb.NewMemoryDatabase())
 		accTrie        = trie.NewEmpty(db)
-		entries        []*kv
+		entries        entrySlice
 		storageRoots   = make(map[common.Hash]common.Hash)
 		storageTries   = make(map[common.Hash]*trie.Trie)
-		storageEntries = make(map[common.Hash][]*kv)
-		nodes          = trienode.NewMergedNodeSet()
+		storageEntries = make(map[common.Hash]entrySlice)
+		nodes          = trie.NewMergedNodeSet()
 	)
 	// Create n accounts in the trie
 	for i := uint64(1); i <= uint64(accounts); i++ {
@@ -1532,8 +1534,8 @@ func makeAccountTrieWithStorage(accounts, slots int, code, boundary bool) (strin
 		// Make a storage trie
 		var (
 			stRoot    common.Hash
-			stNodes   *trienode.NodeSet
-			stEntries []*kv
+			stNodes   *trie.NodeSet
+			stEntries entrySlice
 		)
 		if boundary {
 			stRoot, stNodes, stEntries = makeBoundaryStorageTrie(common.BytesToHash(key), slots, db)
@@ -1556,14 +1558,14 @@ func makeAccountTrieWithStorage(accounts, slots int, code, boundary bool) (strin
 		storageRoots[common.BytesToHash(key)] = stRoot
 		storageEntries[common.BytesToHash(key)] = stEntries
 	}
-	slices.SortFunc(entries, (*kv).less)
+	sort.Sort(entries)
 
 	// Commit account trie
-	root, set, _ := accTrie.Commit(true)
+	root, set := accTrie.Commit(true)
 	nodes.Merge(set)
 
 	// Commit gathered dirty nodes into database
-	db.Update(root, types.EmptyRootHash, nodes, nil)
+	db.Update(nodes)
 
 	// Re-create tries with new root
 	accTrie, err := trie.New(trie.StateTrieID(root), db)
@@ -1585,9 +1587,9 @@ func makeAccountTrieWithStorage(accounts, slots int, code, boundary bool) (strin
 // makeStorageTrieWithSeed fills a storage trie with n items, returning the
 // not-yet-committed trie and the sorted entries. The seeds can be used to ensure
 // that tries are unique.
-func makeStorageTrieWithSeed(owner common.Hash, n, seed uint64, db *trie.Database) (common.Hash, *trienode.NodeSet, []*kv) {
-	trie, _ := trie.New(trie.StorageTrieID(types.EmptyRootHash, owner, types.EmptyRootHash), db)
-	var entries []*kv
+func makeStorageTrieWithSeed(owner common.Hash, n, seed uint64, db *trie.Database) (common.Hash, *trie.NodeSet, entrySlice) {
+	trie, _ := trie.New(trie.StorageTrieID(common.Hash{}, owner, common.Hash{}), db)
+	var entries entrySlice
 	for i := uint64(1); i <= n; i++ {
 		// store 'x' at slot 'x'
 		slotValue := key32(i + seed)
@@ -1600,19 +1602,19 @@ func makeStorageTrieWithSeed(owner common.Hash, n, seed uint64, db *trie.Databas
 		trie.MustUpdate(elem.k, elem.v)
 		entries = append(entries, elem)
 	}
-	slices.SortFunc(entries, (*kv).less)
-	root, nodes, _ := trie.Commit(false)
+	sort.Sort(entries)
+	root, nodes := trie.Commit(false)
 	return root, nodes, entries
 }
 
 // makeBoundaryStorageTrie constructs a storage trie. Instead of filling
 // storage slots normally, this function will fill a few slots which have
 // boundary hash.
-func makeBoundaryStorageTrie(owner common.Hash, n int, db *trie.Database) (common.Hash, *trienode.NodeSet, []*kv) {
+func makeBoundaryStorageTrie(owner common.Hash, n int, db *trie.Database) (common.Hash, *trie.NodeSet, entrySlice) {
 	var (
-		entries    []*kv
+		entries    entrySlice
 		boundaries []common.Hash
-		trie, _    = trie.New(trie.StorageTrieID(types.EmptyRootHash, owner, types.EmptyRootHash), db)
+		trie, _    = trie.New(trie.StorageTrieID(common.Hash{}, owner, common.Hash{}), db)
 	)
 	// Initialize boundaries
 	var next common.Hash
@@ -1651,8 +1653,8 @@ func makeBoundaryStorageTrie(owner common.Hash, n int, db *trie.Database) (commo
 		trie.MustUpdate(elem.k, elem.v)
 		entries = append(entries, elem)
 	}
-	slices.SortFunc(entries, (*kv).less)
-	root, nodes, _ := trie.Commit(false)
+	sort.Sort(entries)
+	root, nodes := trie.Commit(false)
 	return root, nodes, entries
 }
 
@@ -1664,7 +1666,7 @@ func verifyTrie(db ethdb.KeyValueStore, root common.Hash, t *testing.T) {
 		t.Fatal(err)
 	}
 	accounts, slots := 0, 0
-	accIt := trie.NewIterator(accTrie.MustNodeIterator(nil))
+	accIt := trie.NewIterator(accTrie.NodeIterator(nil))
 	for accIt.Next() {
 		var acc struct {
 			Nonce    uint64
@@ -1682,7 +1684,7 @@ func verifyTrie(db ethdb.KeyValueStore, root common.Hash, t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			storeIt := trie.NewIterator(storeTrie.MustNodeIterator(nil))
+			storeIt := trie.NewIterator(storeTrie.NodeIterator(nil))
 			for storeIt.Next() {
 				slots++
 			}

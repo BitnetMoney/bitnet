@@ -1,7 +1,14 @@
 @echo off
+
+:: Bitnet Build Assistant for Windows v.1.0.0
+:: This script is a user-friendly way for less experienced
+:: users to build Bitnet from the source code in their
+:: Windows devices. It still requires Golang and a C
+:: compiler installed to work properly.
+
 :build.home
 cls
-echo Welcome to Bitnet Build for Windows
+echo Welcome to Bitnet Build Assistant for Windows
 echo.
 echo Please select one of the options below:
 echo 1. Build Bitnet
@@ -28,10 +35,20 @@ if /i %opt% == 6 (goto run.test) else (
 :build.bitnet
     echo Building Bitnet...
     echo Searching for old binaries and cleaning old cache...
-    del /f /q build\bin\bitnet.exe
+    del /f /q build\bin\bitnet.exe > NULL
+    del /f /q build\bin\abidump.exe > NULL
+    del /f /q build\bin\abigen.exe > NULL
+    del /f /q build\bin\bootnode.exe > NULL
+    del /f /q build\bin\clef.exe > NULL
+    del /f /q build\bin\devp2p.exe > NULL
+    del /f /q build\bin\bitnetkey.exe > NULL
+    del /f /q build\bin\evm.exe > NULL
+    del /f /q build\bin\faucet.exe > NULL
+    del /f /q build\bin\p2psim.exe > NULL
+    del /f /q build\bin\rlpdump.exe > NULL
     go clean -cache
     go run build/ci.go install ./cmd/geth
-    ren build\bin\geth.exe bitnet.exe
+    ren build\bin\geth.exe bitnet.exe > NULL
     echo Build finished. Press any key to continue.
     pause > NULL
     del NULL
@@ -40,10 +57,21 @@ if /i %opt% == 6 (goto run.test) else (
 :build.all
     echo Building Bitnet (ALL BINARIES)...
     echo Searching for old binaries and cleaning old cache...
-    del /f /q build\bin\bitnet.exe
+    del /f /q build\bin\bitnet.exe > NULL
+    del /f /q build\bin\abidump.exe > NULL
+    del /f /q build\bin\abigen.exe > NULL
+    del /f /q build\bin\bootnode.exe > NULL
+    del /f /q build\bin\clef.exe > NULL
+    del /f /q build\bin\devp2p.exe > NULL
+    del /f /q build\bin\bitnetkey.exe > NULL
+    del /f /q build\bin\evm.exe > NULL
+    del /f /q build\bin\faucet.exe > NULL
+    del /f /q build\bin\p2psim.exe > NULL
+    del /f /q build\bin\rlpdump.exe > NULL
     go clean -cache
     go run build/ci.go install
     ren build\bin\geth.exe bitnet.exe
+    ren build\bin\ethkey.exe bitnetkey.exe
     echo Build finished. Press any key to continue.
     pause > NULL
     del NULL
@@ -60,6 +88,18 @@ if /i %opt% == 6 (goto run.test) else (
     exit
 
 :clean.cache
+    echo Searching for old binary files...
+    del /f /q build\bin\bitnet.exe > NULL
+    del /f /q build\bin\abidump.exe > NULL
+    del /f /q build\bin\abigen.exe > NULL
+    del /f /q build\bin\bootnode.exe > NULL
+    del /f /q build\bin\clef.exe > NULL
+    del /f /q build\bin\devp2p.exe > NULL
+    del /f /q build\bin\bitnetkey.exe > NULL
+    del /f /q build\bin\evm.exe > NULL
+    del /f /q build\bin\faucet.exe > NULL
+    del /f /q build\bin\p2psim.exe > NULL
+    del /f /q build\bin\rldpdump.exe > NULL
     go clean -cache
     rmdir /s /q build/_workspace/pkg
     echo Cache cleanead. Press any key to continue.

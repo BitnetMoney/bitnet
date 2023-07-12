@@ -320,7 +320,7 @@ func (c *Console) AutoCompleteInput(line string, pos int) (string, []string, str
 // Welcome show summary of current Geth instance and some metadata about the
 // console's available modules.
 func (c *Console) Welcome() {
-	message := "Welcome to the Bitnet JavaScript console.\n\n"
+	message := "Welcome to the Geth JavaScript console!\n\n"
 
 	// Print some generic Geth metadata
 	if res, err := c.jsre.Run(`
@@ -345,7 +345,7 @@ func (c *Console) Welcome() {
 		sort.Strings(modules)
 		message += " modules: " + strings.Join(modules, " ") + "\n"
 	}
-	message += "\nTo exit, press CTRL+D or type exit"
+	message += "\nTo exit, press ctrl-d or type exit"
 	fmt.Fprintln(c.printer, message)
 }
 

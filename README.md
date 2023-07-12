@@ -13,7 +13,7 @@ Bitnet requires both **[Golang](https://go.dev/dl/)** and a **C Compiler**.
 You can install Bitnet in your Linux or MacOS device using the command below:
 
 ```
-git clone https://github.com/masayoshikob/bitnet.git && cd bitnet && make bitnet
+git clone https://github.com/masayoshikob/bitnet.git && cd bitnet && sudo bash build.unix.sh
 ```
 
 ## Windows
