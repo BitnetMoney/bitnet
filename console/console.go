@@ -320,17 +320,17 @@ func (c *Console) AutoCompleteInput(line string, pos int) (string, []string, str
 // Welcome show summary of current Geth instance and some metadata about the
 // console's available modules.
 func (c *Console) Welcome() {
-	message := "Welcome to the Geth JavaScript console!\n\n"
+	message := "Welcome to the Bitnet JavaScript console.\n\n"
 
 	// Print some generic Geth metadata
 	if res, err := c.jsre.Run(`
-		var message = "instance: " + web3.version.node + "\n";
+		var message = "Instance: " + web3.version.node + "\n";
 		try {
-			message += "coinbase: " + eth.coinbase + "\n";
+			message += "Coinbase: " + eth.coinbase + "\n";
 		} catch (err) {}
-		message += "at block: " + eth.blockNumber + " (" + new Date(1000 * eth.getBlock(eth.blockNumber).timestamp) + ")\n";
+		message += "Block Height: " + eth.blockNumber + " (" + new Date(1000 * eth.getBlock(eth.blockNumber).timestamp) + ")\n";
 		try {
-			message += " datadir: " + admin.datadir + "\n";
+			message += " Datadir: " + admin.datadir + "\n";
 		} catch (err) {}
 		message
 	`); err == nil {
@@ -343,9 +343,9 @@ func (c *Console) Welcome() {
 			modules = append(modules, fmt.Sprintf("%s:%s", api, version))
 		}
 		sort.Strings(modules)
-		message += " modules: " + strings.Join(modules, " ") + "\n"
+		message += " Modules: " + strings.Join(modules, " ") + "\n"
 	}
-	message += "\nTo exit, press ctrl-d or type exit"
+	message += "\nTo exit, press CTRL+D or type exit."
 	fmt.Fprintln(c.printer, message)
 }
 

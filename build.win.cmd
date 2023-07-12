@@ -47,8 +47,7 @@ if /i %opt% == 6 (goto run.test) else (
     del /f /q build\bin\p2psim.exe > NULL
     del /f /q build\bin\rlpdump.exe > NULL
     go clean -cache
-    go run build/ci.go install ./cmd/geth
-    ren build\bin\geth.exe bitnet.exe > NULL
+    go run build/ci.go install ./cmd/bitnet
     echo Build finished. Press any key to continue.
     pause > NULL
     del NULL
@@ -70,7 +69,6 @@ if /i %opt% == 6 (goto run.test) else (
     del /f /q build\bin\rlpdump.exe > NULL
     go clean -cache
     go run build/ci.go install
-    ren build\bin\geth.exe bitnet.exe
     ren build\bin\ethkey.exe bitnetkey.exe
     echo Build finished. Press any key to continue.
     pause > NULL
