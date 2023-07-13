@@ -30,17 +30,23 @@ Firstly, download the latest release available for your operational system using
 ## Mining
 With your node running, you can start mining using the integrated Javascript Console. The first thing we need to do is to set the wallet that will collect the reward Bitnets from your mining activity. Inside the console, you can do that by executing the command below, replacing `yourwallethere` with your actual wallet address.
 
-```miner.setEtherbase('yourwallethere')```
+```
+miner.setEtherbase('yourwallethere')
+```
 
 With your wallet address set, all we need to do now is to start mining blocks. For that, you can use the command below.
 
-```miner.start(1)```
+```
+miner.start(1)
+```
 
 *You can replace the number `1` with the number of processor cores you want to use for the mining activity, and you can use `()` to use all available cores.*
 
 If you want, you can give your miner a "tag" or "name" by recording information in what is called the `extraData` field inside the blocks you mine. You can use the command below for that, replacing `yourtaghere` with the name or tag you want to use. We recommend keeping it below 12 characters.
 
-```miner.setExtra('yourtaghere')```
+```
+miner.setExtra('yourtaghere')
+```
 
 ## Building
 To build from the source, you will need both **[Golang](https://go.dev/dl/)** and a **C Compiler** installed to build Bitnet. If any of the two is missing or corrupt, your build will not work.
@@ -65,4 +71,6 @@ can use the menu options to build Bitnet from your source code.
 
 ## Outro
 Mainnet Genesis Hash
-```0xa3cc7f928cebbc82a199e3c506104df317244e5de86018b8753ef3096f674f1a0xa3cc7f928cebbc82a199e3c506104df317244e5de86018b8753ef3096f674f1a```
+```
+0xa3cc7f928cebbc82a199e3c506104df317244e5de86018b8753ef3096f674f1a0xa3cc7f928cebbc82a199e3c506104df317244e5de86018b8753ef3096f674f1a
+```
