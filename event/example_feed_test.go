@@ -1,18 +1,14 @@
-// Copyright 2016 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2023 Bitnet
+// This file is part of the Bitnet library.
 //
-// The go-ethereum library is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// The go-ethereum library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// This software is provided "as is", without warranty of any kind,
+// express or implied, including but not limited to the warranties
+// of merchantability, fitness for a particular purpose and
+// noninfringement. In no even shall the authors or copyright
+// holders be liable for any claim, damages, or other liability,
+// whether in an action of contract, tort or otherwise, arising
+// from, out of or in connection with the software or the use or
+// other dealings in the software.
 
 package event_test
 

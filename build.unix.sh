@@ -4,6 +4,8 @@
 # Unix devices. It still requires Goland and a C
 # compiler installed to work properly.
 
+# SCRIPT NOT TESTED
+
 echo "Cleaning cache and previous builds..."
     # Cleaning GO cache.
     go clean -cache
