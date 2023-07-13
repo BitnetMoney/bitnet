@@ -22,7 +22,7 @@ build/_vendor/pkg
 .project
 .settings
 
-# used by the Makefile
+# used by the makefile
 /build/_workspace/
 /build/cache/
 /build/bin/
@@ -38,16 +38,9 @@ profile.cov
 # VS Code
 .vscode
 
-# dashboard
-/dashboard/assets/flow-typed
-/dashboard/assets/node_modules
-/dashboard/assets/stats.json
-/dashboard/assets/bundle.js
-/dashboard/assets/bundle.js.map
-/dashboard/assets/package-lock.json
-
 **/yarn-error.log
 logs/
 NULL
 
 /bitnet
+/bitnet_test

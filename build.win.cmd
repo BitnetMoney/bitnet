@@ -27,7 +27,7 @@ if /i %opt% == 4 (goto clean.cache)
 if /i %opt% == 5 (goto run.linters)
 if /i %opt% == 6 (goto run.test) else (
     echo Invalid option! Please try again.
-    pause > NULL
+    pause >NULL
     del NULL
     goto build.home
 )
@@ -35,17 +35,17 @@ if /i %opt% == 6 (goto run.test) else (
 :build.bitnet
     echo Building Bitnet...
     echo Searching for old binaries and cleaning old cache...
-    del /f /q build\bin\bitnet.exe > NULL
-    del /f /q build\bin\abidump.exe > NULL
-    del /f /q build\bin\abigen.exe > NULL
-    del /f /q build\bin\bootnode.exe > NULL
-    del /f /q build\bin\clef.exe > NULL
-    del /f /q build\bin\devp2p.exe > NULL
-    del /f /q build\bin\bitnetkey.exe > NULL
+    del /f /q build\bin\bitnet.exe >NULL
+    del /f /q build\bin\abidump.exe >NULL
+    del /f /q build\bin\abigen.exe >NULL
+    del /f /q build\bin\bootnode.exe >NULL
+    del /f /q build\bin\clef.exe >NULL
+    del /f /q build\bin\devp2p.exe >NULL
+    del /f /q build\bin\bitnetkey.exe >NULL
     del /f /q build\bin\evm.exe > NULL
-    del /f /q build\bin\faucet.exe > NULL
-    del /f /q build\bin\p2psim.exe > NULL
-    del /f /q build\bin\rlpdump.exe > NULL
+    del /f /q build\bin\faucet.exe >NULL
+    del /f /q build\bin\p2psim.exe >NULL
+    del /f /q build\bin\rlpdump.exe >NULL
     go clean -cache
     go run build/ci.go install ./cmd/bitnet
     echo Build finished. Press any key to continue.
@@ -56,17 +56,17 @@ if /i %opt% == 6 (goto run.test) else (
 :build.all
     echo Building Bitnet (ALL BINARIES)...
     echo Searching for old binaries and cleaning old cache...
-    del /f /q build\bin\bitnet.exe > NULL
-    del /f /q build\bin\abidump.exe > NULL
-    del /f /q build\bin\abigen.exe > NULL
-    del /f /q build\bin\bootnode.exe > NULL
-    del /f /q build\bin\clef.exe > NULL
-    del /f /q build\bin\devp2p.exe > NULL
-    del /f /q build\bin\bitnetkey.exe > NULL
-    del /f /q build\bin\evm.exe > NULL
-    del /f /q build\bin\faucet.exe > NULL
-    del /f /q build\bin\p2psim.exe > NULL
-    del /f /q build\bin\rlpdump.exe > NULL
+    del /f /q build\bin\bitnet.exe >NULL
+    del /f /q build\bin\abidump.exe >NULL
+    del /f /q build\bin\abigen.exe >NULL
+    del /f /q build\bin\bootnode.exe >NULL
+    del /f /q build\bin\clef.exe >NULL
+    del /f /q build\bin\devp2p.exe >NULL
+    del /f /q build\bin\bitnetkey.exe >NULL
+    del /f /q build\bin\evm.exe >NULL
+    del /f /q build\bin\faucet.exe >NULL
+    del /f /q build\bin\p2psim.exe >NULL
+    del /f /q build\bin\rlpdump.exe >NULL
     go clean -cache
     go run build/ci.go install
     echo Build finished. Press any key to continue.
@@ -86,17 +86,17 @@ if /i %opt% == 6 (goto run.test) else (
 
 :clean.cache
     echo Searching for old binary files...
-    del /f /q build\bin\bitnet.exe > NULL
-    del /f /q build\bin\abidump.exe > NULL
-    del /f /q build\bin\abigen.exe > NULL
-    del /f /q build\bin\bootnode.exe > NULL
-    del /f /q build\bin\clef.exe > NULL
-    del /f /q build\bin\devp2p.exe > NULL
-    del /f /q build\bin\bitnetkey.exe > NULL
-    del /f /q build\bin\evm.exe > NULL
-    del /f /q build\bin\faucet.exe > NULL
-    del /f /q build\bin\p2psim.exe > NULL
-    del /f /q build\bin\rldpdump.exe > NULL
+    del /f /q build\bin\bitnet.exe >NULL
+    del /f /q build\bin\abidump.exe >NULL
+    del /f /q build\bin\abigen.exe >NULL
+    del /f /q build\bin\bootnode.exe >NULL
+    del /f /q build\bin\clef.exe >NULL
+    del /f /q build\bin\devp2p.exe >NULL
+    del /f /q build\bin\bitnetkey.exe >NULL
+    del /f /q build\bin\evm.exe >NULL
+    del /f /q build\bin\faucet.exe >NULL
+    del /f /q build\bin\p2psim.exe >NULL
+    del /f /q build\bin\rldpdump.exe >NULL
     go clean -cache
     rmdir /s /q build/_workspace/pkg
     echo Cache cleanead. Press any key to continue.
