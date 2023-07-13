@@ -7,20 +7,21 @@ It has no pre-mined supply, and for a while after the launch, anyone with a regu
 
 *There is only one way forward, and it is decentralization.*
 
-[Visit Website](https://bitnet.money/)  
-[Read the Paper](https://bitnet.money/d/bitnet.pdf)  
+**[Visit Website](https://bitnet.money/)**
+**[Join the Conversation](https://bitnet.money/forum)**   
+**[Read the Paper](https://bitnet.money/d/bitnet.pdf)**  
 
-# Building
-You will need both **[Golang](https://go.dev/dl/)** and a **C Compiler** installed to build Bitnet.
+## Building
+You will need both **[Golang](https://go.dev/dl/)** and a **C Compiler** installed to build Bitnet. If any of the two is missing or corrupt, your build will not work.
 
-## Linux and MacOS
+### Linux and MacOS
 You can install Bitnet in your Linux or MacOS device using the command below:
 
 ```
 git clone https://github.com/masayoshikob/bitnet.git && cd bitnet && sudo bash build.unix.sh
 ```
 
-## Windows
+### Windows
 You can install Bitnet in your Windows device using the command below:
 ```
 git clone https://github.com/masayoshikob/bitnet.git ; cd bitnet ; .\build.win
@@ -28,3 +29,16 @@ git clone https://github.com/masayoshikob/bitnet.git ; cd bitnet ; .\build.win
 
 This will open the Bitnet Build Assistant for Windows on your console, and you
 can use the menu options to build Bitnet from your source code.
+
+## Running a Node
+Firstly, download the latest release available at our **[Releases Page](https://github.com/masayoshikob/bitnet/releases)**.
+
+### On Linux and MacOs
+(coming soon)
+
+### On Windows
+(coming soon)
+
+## Outro
+Mainnet Genesis Hash
+```0xa3cc7f928cebbc82a199e3c506104df317244e5de86018b8753ef3096f674f1a0xa3cc7f928cebbc82a199e3c506104df317244e5de86018b8753ef3096f674f1a```
