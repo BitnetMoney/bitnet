@@ -324,13 +324,13 @@ func (c *Console) Welcome() {
 
 	// Print some generic Geth metadata
 	if res, err := c.jsre.Run(`
-		var message = "Instance: " + web3.version.node + "\n";
+		var message = "Instance: Bitnet 0.0.1a \n";
 		try {
 			message += "Coinbase: " + eth.coinbase + "\n";
 		} catch (err) {}
 		message += "Block Height: " + eth.blockNumber + " (" + new Date(1000 * eth.getBlock(eth.blockNumber).timestamp) + ")\n";
 		try {
-			message += " Datadir: " + admin.datadir + "\n";
+			message += "Datadir: " + admin.datadir + "\n";
 		} catch (err) {}
 		message
 	`); err == nil {
@@ -343,7 +343,7 @@ func (c *Console) Welcome() {
 			modules = append(modules, fmt.Sprintf("%s:%s", api, version))
 		}
 		sort.Strings(modules)
-		message += " Modules: " + strings.Join(modules, " ") + "\n"
+		message += "Modules: " + strings.Join(modules, " ") + "\n"
 	}
 	message += "\nTo exit, press CTRL+D or type exit."
 	fmt.Fprintln(c.printer, message)

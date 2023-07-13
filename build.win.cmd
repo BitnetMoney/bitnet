@@ -69,7 +69,6 @@ if /i %opt% == 6 (goto run.test) else (
     del /f /q build\bin\rlpdump.exe > NULL
     go clean -cache
     go run build/ci.go install
-    ren build\bin\ethkey.exe bitnetkey.exe
     echo Build finished. Press any key to continue.
     pause > NULL
     del NULL
