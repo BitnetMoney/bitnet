@@ -11,6 +11,14 @@ It has no pre-mined supply, and for a while after the launch, anyone with a regu
   
 **[Download](https://github.com/masayoshikob/bitnet/releases)**
 
+# Explore:
+
+**[Running a Node](#running-a-node)**  
+**[Generating Bitnets via Mining](#generating-bitnets-via-mining)**  
+**[Using MetaMask & Other Wallet Providers](#using-metamask--other-wallet-providers)**  
+**[Building from Source](##building-from-source)**  
+**[Outro](##building-from-source)**
+
 ## Running a Node
 Download the latest release available for your operational system using the links available in the **[releases page](https://github.com/masayoshikob/bitnet/releases)**. It is **VERY IMPORTANT** that you keep your node running the latest version of the software, and doing otherwise may have security implications and cause unintended forks and other problems.
 
