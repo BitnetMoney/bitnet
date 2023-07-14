@@ -78,7 +78,9 @@ The process of adding Bitnet to your wallet provider may vary depending on the p
 - **RPC URL:** http://127.0.0.1:8545/
 - **Currency Symbol:** BTN
 
-If you are using a public RPC server to connect, all you need is to replace the `RPC URL` with the correct URL supplied to you by your RPC provider.
+*Note that for `localhost`  connections you will use `http` insted of `https`.*
+
+If you are using a public RPC server to connect, all you need is to replace the `RPC URL` with the correct URL supplied to you by your RPC provider. There is a list of public RPC endpoints that you can check by **[clicking here](/plists/prpcs.md)**.
 
 ## Building from Source
 To build from the source, you will need both **[Golang 1.19+](https://go.dev/dl/)** and a **C Compiler** installed to build Bitnet. If any of the two is missing or corrupt, your build will not work.
