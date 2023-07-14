@@ -29,30 +29,20 @@ tar –xvzf Unix_Bitnet_v.X.X.X.tar.gz
 ```
 *Replace `Unix_Bitnet_v.X.X.X.tar.gz` with the correct filename before executing the command.*
 
-You can modify your node parameters by editing the `.config` file. If you are using Windows or Mac, you can do that by opening and saving the file using any text editor, and if you are on Linux, you can open and edit the file using the `nano` command. Use `CTRL+D` + `ENTER` to save your modifications, and `CTRL+X` to exit `nano`.
+You can modify your node parameters by editing the `.config` file. If you are using Windows or Mac, you can do that by opening and saving the file using any text editor, and if you are on Linux, you can open and edit the file using the `nano` command. Use `CTRL+D` + `ENTER` to save your modifications, and `CTRL+X` to exit `nano`. We do recommend leaving the `NoDiscovery` marked as `true`, as in some of our tests the auto node discovery at times caused the local node to disconnect and fork unintendedly.
 ```
 nano .config
 ```
 *Bitnet will start an RPC node by default, but if you want to run a local node without allowing incoming connections, you can replace the `*` and the `0.0.0.0` settings inside `.config` with `localhost`.*
 
-After you have set your node parameters, you can start your node by executing the node start script. Examples below:
+After you have set your node parameters, you can start your node by executing the node start script. If you are using Windows, you can execute `Bitnet.cmd` by double-clicking on it, and if you are running it on a Linux or MacOS device, you can run:
   
-**On Windows Devices:**
-```
-.\Bitnet
-```
-**On Unix Devices:***
 ```
 bash bitnet.node.sh
 ```
 
-With your node running, you can run the console script to open the Javascript Console so you can control and interact with your node. Examples below:
+With your node running, you can run the console script to open the Javascript Console so you can control and interact with your node. On Windows devices, all you need to do is to run the `BitnetConsole.cmd` file, and on Linux or MacOS devices you can run:
   
-**On Windows Devices:**
-```
-.\BitnetConsole
-```
-**On Unix Devices:**
 ```
 bash bitnet.console.sh
 ```
