@@ -8,6 +8,7 @@ It has no pre-mined supply, and for a while after the launch, anyone with a regu
 **[Visit Website](https://bitnet.money/)**  
 **[Join the Conversation](https://bitnet.money/forum)**   
 **[Read the Paper](https://bitnet.money/d/bitnet.pdf)**  
+**[Join on Bitcointalk](https://bitcointalk.org/index.php?topic=5459763)** 
   
 **[Download](https://github.com/masayoshikob/bitnet/releases)**
 
