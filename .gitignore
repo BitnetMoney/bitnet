@@ -42,5 +42,5 @@ profile.cov
 logs/
 NULL
 
-/bitnet
+/bitnet_prebuild
 /bitnet_test
