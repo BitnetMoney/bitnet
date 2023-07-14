@@ -25,9 +25,10 @@ You can modify your node parameters by editing the `.config` file. If you are us
 ```
 nano .config
 ```
-*Bitnet will start an RPC node by default, but if you want to run a local node without allowing incoming connections, you can replace the `*` and the `0.0.0.0` settings inside the `.config` with `localhost`.*
+*Bitnet will start an RPC node by default, but if you want to run a local node without allowing incoming connections, you can replace the `*` and the `0.0.0.0` settings inside `.config` with `localhost`.*
 
 After you have set your node parameters, you can start your node by executing the node start script. Examples below:
+  
 **On Windows Devices:**
 ```
 .\Bitnet
@@ -37,7 +38,8 @@ After you have set your node parameters, you can start your node by executing th
 bash bitnet.node.sh
 ```
 
-With your node running, you can run the console script to open the Javascript Console so you can control your node. Examples below:
+With your node running, you can run the console script to open the Javascript Console so you can control and interact with your node. Examples below:
+  
 **On Windows Devices:**
 ```
 .\BitnetConsole
@@ -67,6 +69,18 @@ If you want, you can give your miner a "tag" or "name" by recording information 
 ```
 miner.setExtra('yourtaghere')
 ```
+
+## Using MetaMask & Other Wallet Providers
+Bitnet is natively compatible with **[MetaMask](https://metamask.io/download/)** and a range of other well established wallet providers. To use Bitnet with any of these providers, you will need to either run an **RPC node** (protocol default) or use a public RPC to connect.
+  
+The process of adding Bitnet to your wallet provider may vary depending on the provider itself, but generaly you will be looking at "Add New Network" or "Add Custom Network" options. Once your RPC node is running, you can use the parameters below to connect:
+
+- **Network Name:** Bitnet
+- **Network ID:** 210
+- **RPC URL:** http://127.0.0.1:8545/
+- **Currency Symbol:** BTN
+
+If you are using a public RPC server to connect, all you need is to replace the `RPC URL` with the correct URL supplied to you by your RPC provider.
 
 ## Building from Source
 To build from the source, you will need both **[Golang](https://go.dev/dl/)** and a **C Compiler** installed to build Bitnet. If any of the two is missing or corrupt, your build will not work.
