@@ -91,7 +91,7 @@ The process of adding Bitnet to your wallet provider may vary depending on the p
 If you are using a public RPC server to connect, all you need is to replace the `RPC URL` with the correct URL supplied to you by your RPC provider.
 
 ## Building from Source
-To build from the source, you will need both **[Golang](https://go.dev/dl/)** and a **C Compiler** installed to build Bitnet. If any of the two is missing or corrupt, your build will not work.
+To build from the source, you will need both **[Golang 1.19+](https://go.dev/dl/)** and a **C Compiler** installed to build Bitnet. If any of the two is missing or corrupt, your build will not work.
   
 *You don't need to build from the source to run a local node. For that, you can just download the latest pre-built version for your operational system and use it to run your node. Go to the [the releases page](https://github.com/masayoshikob/bitnet/releases) for download links.*
 
