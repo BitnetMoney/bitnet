@@ -16,7 +16,7 @@ It has no pre-mined supply, and for a while after the launch, anyone with a regu
 **[Running a Node](#running-a-node)**  
 **[Generating Bitnets via Mining](#generating-bitnets-via-mining)**  
 **[Using MetaMask & Other Wallet Providers](#using-metamask--other-wallet-providers)**  
-**[Building from Source](##building-from-source)**  
+**[Building from Source](#building-from-source)**  
 **[Outro](##building-from-source)**
 
 ## Running a Node
