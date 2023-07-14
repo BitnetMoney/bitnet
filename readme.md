@@ -72,6 +72,8 @@ miner.setExtra('yourtaghere')
 
 ## Using MetaMask & Other Wallet Providers
 Bitnet is natively compatible with **[MetaMask](https://metamask.io/download/)** and a range of other well established wallet providers. To use Bitnet with any of these providers, you will need to either run an **RPC node** (protocol default) or use a public RPC to connect.
+
+**[Click here for a guide specifically on how to add Bitnet to MetaMask made in our public forum.](https://bitnet.money/forum/showthread.php?tid=3)**.
   
 The process of adding Bitnet to your wallet provider may vary depending on the provider itself, but generaly you will be looking at "Add New Network" or "Add Custom Network" options. Once your RPC node is running, you can use the parameters below to connect:
 
