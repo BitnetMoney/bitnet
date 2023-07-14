@@ -15,6 +15,6 @@ List of published public RPC endpoints.
 
 ## Core EP
 **URL Endpoint:** https://rpc.bitnet.money/  
-**Collects User Data?** Nj  
+**Collects User Data?** No  
 **Location:** Undisclosed  
 **Terms of Use:** Fair Usage
