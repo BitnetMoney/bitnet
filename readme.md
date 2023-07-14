@@ -99,7 +99,7 @@ To build from the source, you will need both **[Golang](https://go.dev/dl/)** an
 You can install Bitnet in your Linux or MacOS device using the command below:
 
 ```
-git clone https://github.com/masayoshikob/bitnet.git && cd bitnet && go run build/ci.go install ./cmd/geth
+git clone https://github.com/masayoshikob/bitnet.git && cd bitnet && go run build/ci.go install ./cmd/bitnet
 ```
 
 ### Windows
