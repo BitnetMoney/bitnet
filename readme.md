@@ -51,6 +51,8 @@ bash bitnet.console.sh
 ```
 
 ## Generating Bitnets via Mining
+⚠ Due to the current high difficulty, might take a few days for you to mine a Bitnet if you're using your CPU. I'm working on a further pre-release `(v0.0.2a)` that will include `ethminer` and instructions on how to mine with your GPU.
+
 With your node running, you can start mining using the integrated Javascript Console. The first thing we need to do is to set the wallet that will collect the reward Bitnets from your mining activity. Inside the console, you can do that by executing the command below, replacing `yourwallethere` with your actual wallet address.
 
 ```
