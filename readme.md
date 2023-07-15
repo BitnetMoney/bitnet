@@ -1,5 +1,3 @@
-💡 There's a few requests for a Discord server to be created, and this is certainly on the plans, but until that happens, our forum will be the best place for you to ask questions and interact with other users of the network. Any user is also welcome to create and manage social media channels for Bitnet, as this is an open source decentralized project.
-
 # Bitnet Core
 Bitnet is decentralized like Bitcoin, but powerful like Ethereum. Bitnet is a decentralized technology that powers programmable money. Much like Bitcoin, users can make use of the protocol to generate, send, and receive Bitnets among themselves, and like Ethereum, it is also compatible with smart contract and can be used to develop complex subprotocols that can power programmable money, digital assets, non-fungibles, decentralized autonomous organizations and more.
 
@@ -10,6 +8,7 @@ It has no pre-mined supply, and for a while after the launch, anyone with a regu
 **[Visit Website](https://bitnet.money/)**  
 **[Join the Conversation](https://bitnet.money/forum)**   
 **[Read the Paper](https://bitnet.money/d/bitnet.pdf)**  
+**[Join our Discord](https://discord.gg/dtw7rKQfRs)**  
 **[Join on Bitcointalk](https://bitcointalk.org/index.php?topic=5459763)** 
   
 **[Download](https://github.com/masayoshikob/bitnet/releases)**
