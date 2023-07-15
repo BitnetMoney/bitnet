@@ -16,4 +16,4 @@
 # You can change the software flags below, and for more information
 # visit https://github.com/ethereum-mining/ethminer.
 
-.\ethminer -P http://127.0.0.1:8545/ --noeval --report-hashrate --response-timeout 60 --work-timeout 300
+./ethminer -P http://127.0.0.1:8545/ --noeval --report-hashrate --response-timeout 60 --work-timeout 300
