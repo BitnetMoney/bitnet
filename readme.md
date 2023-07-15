@@ -51,8 +51,9 @@ bash bitnet.console.sh
 ```
 
 ## Generating Bitnets via Mining
-⚠ Due to the current high difficulty, might take a few days for you to mine a Bitnet if you're using your CPU. I'm working on a further pre-release `(v0.0.2a)` that will include `ethminer` and instructions on how to mine Bitnet with your GPU.
+⚠ Due to the current high difficulty, might take a few days for you to mine a Bitnet if you're using your CPU.
 
+#### CPU Mining
 With your node running, you can start mining using the integrated Javascript Console. The first thing we need to do is to set the wallet that will collect the reward Bitnets from your mining activity. Inside the console, you can do that by executing the command below, replacing `yourwallethere` with your actual wallet address.
 
 ```
@@ -72,6 +73,15 @@ If you want, you can give your miner a "tag" or "name" by recording information 
 ```
 miner.setExtra('yourtaghere')
 ```
+
+#### GPU Mining
+To mine with your GPU, it is recommended you set your wallet address directly on the starting script. You can do it by modifying `Bitnet.cmd` (on Windows) or `bitnet.node.sh` (on Linux/MacOS) with any text editor, and editing the flag `--miner.etherbase 0x0000000000000000000000000000000000000000` replacing the `0x0` address with your own wallet address.
+
+With your node running, start the GPU mining script by double-clicking on it or running it via the terminal. On Windows devices the batchfile script to run the GPU miner is named `BitnetGPUMiner.cmd` and on unix devices, `bitnet.gpuminer.sh`.
+
+Once running, the script will automatically start mining using your GPU hardware and sending the rewards to the wallet specified.
+
+The script uses `ethminer` and  you can personalize how you want to run it by modifying the script with any text editor. For more information abour `ethminer` please visit https://github.com/ethereum-mining/ethminer.
 
 ## Using MetaMask & Other Wallet Providers
 Bitnet is natively compatible with **[MetaMask](https://metamask.io/download/)** and a range of other well established wallet providers. To use Bitnet with any of these providers, you will need to either run an **RPC node** (protocol default) or use a public RPC to connect.
