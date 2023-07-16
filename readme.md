@@ -29,7 +29,7 @@ Download the latest release available for your operational system using the link
 Extract the contents of the file you downloaded inside the directory you want to store your node information. Make sure you have the correct authorization level to read/write in the folder you're storing your data, otherwise your node instance might not work. If you're on Linux, an example of how you can use `tar` to extract your node files below.
 
 ```
-tar –xvzf Unix_Bitnet_v.X.X.X.tar.gz
+tar –xf Unix_Bitnet_v.X.X.X.tar.gz
 ```
 *Replace `Unix_Bitnet_v.X.X.X.tar.gz` with the correct filename before executing the command.*
 
@@ -106,14 +106,14 @@ To build from the source, you will need both **[Golang 1.19+](https://go.dev/dl/
 *You don't need to build from the source to run a local node. For that, you can just download the latest pre-built version for your operational system and use it to run your node. Go to the [the releases page](https://github.com/masayoshikob/bitnet/releases) for download links.*
 
 ### Linux and MacOS
-You can install Bitnet in your Linux or MacOS device using the command below:
+You can build Bitnet in your Linux or MacOS device using the command below:
 
 ```
 git clone https://github.com/masayoshikob/bitnet.git && cd bitnet && go run build/ci.go install ./cmd/bitnet
 ```
 
 ### Windows
-You can install Bitnet in your Windows device using the command below:
+You can build Bitnet in your Windows device using the command below:
 ```
 git clone https://github.com/masayoshikob/bitnet.git ; cd bitnet ; .\build.win
 ```
