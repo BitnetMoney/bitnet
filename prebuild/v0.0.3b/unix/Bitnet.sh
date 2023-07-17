@@ -24,8 +24,8 @@
 
 # Register and initiates the mainnet genesis file.
 echo "Initiating mainnet genesis..."
-./bitnet --datadir bitnet.db init .bitnet
+bitnet --datadir bitnet.db init .bitnet
 
 # Starts the node using the parameters specified.
 echo "Starting node..."
-./bitnet --networkid 210 --config .config --miner.etherbase 0x0000000000000000000000000000000000000000 --http.corsdomain * --graphql.corsdomain * --mine
+bitnet --networkid 210 --config .config --miner.etherbase 0x0000000000000000000000000000000000000000 --mine

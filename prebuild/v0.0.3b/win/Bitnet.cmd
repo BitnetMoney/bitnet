@@ -29,5 +29,5 @@ echo Initiating mainnet genesis...
 
 :: Starts the node using the parameters specified.
 echo Starting node...
-.\bitnet --networkid 210 --config .config --miner.etherbase 0x0000000000000000000000000000000000000000 --http.corsdomain * --graphql.corsdomain * --mine
+.\bitnet --networkid 210 --config .config --miner.etherbase 0x0000000000000000000000000000000000000000 --mine
 pause
