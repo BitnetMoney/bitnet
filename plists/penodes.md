@@ -2,11 +2,13 @@
 This is a list of `enodes` miners and node runners can try to connect to to sync with the network. The more enodes you're connected to, the more decentralized and secure Bitnet is.
 Due to the dynamic nature of how nodes are handled, they can be shutdown with a click of a button and it is almost close to impossible to keep a real-time updated list with all operational `enodes`, as they can also achieve their `maxPeerCount` among other things, so we encourage you to just "try the next one" if the enode you've picked doesn't hold.
   
-If you are running a Bitnet node, please allow inbound connections to the ports `30303` and `8545` so other nodes can connect and interact with you.
+If you are running a Bitnet node, please allow inbound connections to the ports `30210` so other nodes can connect and interact with you.
   
 ```
     "enode://298d8c4ec54915c8bd64fa1a2c8e3dc878b2c64132299378131b38aedb5686d4f3521e5e636eb6f2f2ced80dc96df275b3e153ec40513ba9a35143c8c83e9441@195.20.234.201:30303",
     "enode://e837acbb6f6a5b76736d75cf17238b03d428cab8e62c6cbf327a830b3b0eada22f98bc0784c0208c940cbc1c51e6593873c2888289a40e771862e34a552cd252@74.208.172.80:30303",
+    "enode://561982250c1fe77ad1f59d0f8651c931ee12a1494d87b17c54b74685959eeecdbcf48018fa0e5a7e1cbdc75878e417cd98c64269cdf619ee999a33dc726a087a@74.208.172.89:30303",
+    "enode://2763933e8228203aabd2d818fd00bbd3f211ae32603289f9c9e4a817c19087a9c23dbbd7eaef4514fac045a6abcd63f7017c01ce1d04547254510b646af410e2@82.165.6.49:30210",
     "enode://ab81feec6b7a44ebd6b4738431505aab2d0387a2aeda6d655163746633ae44b947a6d4a44cf2344c3d38a1d6869e1eb1d5960cdc46fcc59ccc18fb345c44e945@154.31.24.20:52922",
     "enode://0f1e8c10c6ae9899d808744c61512645d3744d3694608bb5ba9d81bf07dd17772f9cf1c3ae9ca4e0b5e9f8102ebde1d91c5fe3a8f5a719d0de94275d82585b0b@113.85.199.134:5067",
     "enode://31262a2d69192172986e78730495dd31ce5b99919f0149522dc2159ea1af8057994c096abdfba0352c106b96993efe332558fd9cf03c9f3a93f8625f815c97ef@60.222.158.49:25262",
