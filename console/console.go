@@ -316,7 +316,7 @@ func (c *Console) AutoCompleteInput(line string, pos int) (string, []string, str
 // Welcome show summary of current Geth instance and some metadata about the
 // console's available modules.
 func (c *Console) Welcome() {
-	message := "Welcome to the Bitnet CLI console.\n\n"
+	message := "Welcome to the CLI console for your Bitnet Node.\n\n"
 
 	// Print some generic Geth metadata
 	if res, err := c.jsre.Run(`

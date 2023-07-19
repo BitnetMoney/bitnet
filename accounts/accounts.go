@@ -10,7 +10,7 @@
 // from, out of or in connection with the software or the use or
 // other dealings in the software.
 
-// Package accounts implements high level Ethereum account management.
+// Package accounts implements high level account management.
 package accounts
 
 import (

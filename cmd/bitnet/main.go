@@ -1,18 +1,14 @@
-// Copyright 2014 The go-ethereum Authors
-// This file is part of go-ethereum.
+// Copyright 2023 Bitnet
+// This file is part of the Bitnet library.
 //
-// go-ethereum is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// go-ethereum is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with go-ethereum. If not, see <http://www.gnu.org/licenses/>.
+// This software is provided "as is", without warranty of any kind,
+// express or implied, including but not limited to the warranties
+// of merchantability, fitness for a particular purpose and
+// noninfringement. In no even shall the authors or copyright
+// holders be liable for any claim, damages, or other liability,
+// whether in an action of contract, tort or otherwise, arising
+// from, out of or in connection with the software or the use or
+// other dealings in the software.
 
 // geth is the official command-line client for Ethereum.
 package main
@@ -200,7 +196,7 @@ var (
 	}
 )
 
-var app = flags.NewApp("the go-ethereum command line interface")
+var app = flags.NewApp("the bitnet command line interface")
 
 func init() {
 	// Initialize the CLI app and start Geth
@@ -427,13 +423,13 @@ func startNode(ctx *cli.Context, stack *node.Node, backend ethapi.Backend, isCon
 
 	// Start auxiliary services if enabled
 	if ctx.Bool(utils.MiningEnabledFlag.Name) || ctx.Bool(utils.DeveloperFlag.Name) {
-		// Mining only makes sense if a full Ethereum node is running
+		// Mining only makes sense if a full node is running
 		if ctx.String(utils.SyncModeFlag.Name) == "light" {
 			utils.Fatalf("Light clients do not support mining")
 		}
 		ethBackend, ok := backend.(*eth.EthAPIBackend)
 		if !ok {
-			utils.Fatalf("Ethereum service not running")
+			utils.Fatalf("Bitnet service not running")
 		}
 		// Set the gas price to the limits from the CLI and start mining
 		gasprice := flags.GlobalBig(ctx, utils.MinerGasPriceFlag.Name)
