@@ -14,7 +14,7 @@ It has no pre-mined supply, and for a while after the launch, anyone with a regu
 **[Chat on Telegram](https://t.me/Bitnet_Official_Group)**  
 **[Join on Bitcointalk](https://bitcointalk.org/index.php?topic=5459763)** 
   
-**[Download](https://github.com/masayoshikob/bitnet/releases)**
+**[Download](https://github.com/BitnetMoney/bitnet/releases)**
 
 # Explore:
 
