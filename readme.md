@@ -6,122 +6,16 @@ It has no pre-mined supply, and for a while after the launch, anyone with a regu
 *There is only one way forward, and it is decentralization.*
 
 **[Visit Website](https://bitnet.money/)**  
-**[Block Explorer](https://explorer.bitnet.money)**  
-
-**[Join the Conversation](https://bitnet.money/forum)**   
-**[Read the Paper](https://bitnet.money/d/bitnet.pdf)**  
-**[Join our Discord](https://discord.gg/dtw7rKQfRs)**  
-**[Chat on Telegram](https://t.me/Bitnet_Official_Group)**  
-**[Join on Bitcointalk](https://bitcointalk.org/index.php?topic=5459763)** 
-  
 **[Download](https://github.com/BitnetMoney/bitnet/releases)**
 
 # Explore:
 
-**[Running a Node](#running-a-node)**  
-**[Generating Bitnets via Mining](#generating-bitnets-via-mining)**  
-**[Using MetaMask & Other Wallet Providers](#using-metamask--other-wallet-providers)**  
-**[Public Lists](/plists/readme.md)**  
-**[Building from Source](#building-from-source)**  
-**[Outro](##building-from-source)**
-
-## Running a Node
-Download the latest release available for your operational system using the links available in the **[releases page](https://github.com/masayoshikob/bitnet/releases)**. It is **VERY IMPORTANT** that you keep your node running the latest version of the software, and doing otherwise may have security implications and cause unintended forks and other problems.
-
-Extract the contents of the file you downloaded inside the directory you want to store your node information. Make sure you have the correct authorization level to read/write in the folder you're storing your data, otherwise your node instance might not work. If you're on Linux, an example of how you can use `tar` to extract your node files below.
-
-```
-tar –xf Unix_Bitnet_v.X.X.X.tar.gz
-```
-*Replace `Unix_Bitnet_v.X.X.X.tar.gz` with the correct filename before executing the command.*
-
-You can modify your node parameters by editing the `.config` file. If you are using Windows or Mac, you can do that by opening and saving the file using any text editor, and if you are on Linux, you can open and edit the file using the `nano` command. Use `CTRL+D` + `ENTER` to save your modifications, and `CTRL+X` to exit `nano`. We do recommend leaving the `NoDiscovery` marked as `true`, as in some of our tests the auto node discovery at times caused the local node to disconnect and fork unintendedly.
-```
-nano .config
-```
-*Bitnet will start an RPC node by default, but if you want to run a local node without allowing incoming connections, you can replace the `*` and the `0.0.0.0` settings inside `.config` with `localhost`.*
-
-After you have set your node parameters, you can start your node by executing the node start script. If you are using Windows, you can execute `Bitnet.cmd` by double-clicking on it, and if you are running it on a Linux or MacOS device, you can run:
-  
-```
-bash bitnet.node.sh
-```
-
-With your node running, you can run the console script to open the Javascript Console so you can control and interact with your node. On Windows devices, all you need to do is to run the `BitnetConsole.cmd` file, and on Linux or MacOS devices you can run:
-  
-```
-bash bitnet.console.sh
-```
-
-## Generating Bitnets via Mining
-⚠ Due to the current high difficulty, might take a few days for you to mine a Bitnet if you're using your CPU.
-
-#### CPU Mining
-With your node running, you can start mining using the integrated Javascript Console. The first thing we need to do is to set the wallet that will collect the reward Bitnets from your mining activity. Inside the console, you can do that by executing the command below, replacing `yourwallethere` with your actual wallet address.
-
-```
-miner.setEtherbase('yourwallethere')
-```
-
-With your wallet address set, all we need to do now is to start mining blocks. For that, you can use the command below.
-
-```
-miner.start(1)
-```
-
-*You can replace the number `1` with the number of processor cores you want to use for the mining activity, or you can use `()` to use all available cores.*
-
-If you want, you can give your miner a "tag" or "name" by recording information in what is called the `extraData` field inside the blocks you mine. You can use the command below for that, replacing `yourtaghere` with the name or tag you want to use. We recommend keeping it below 12 characters.
-
-```
-miner.setExtra('yourtaghere')
-```
-
-#### GPU Mining
-To mine with your GPU, it is recommended you set your wallet address directly on the starting script. You can do it by modifying `Bitnet.cmd` (on Windows) or `bitnet.node.sh` (on Linux/MacOS) with any text editor, and editing the flag `--miner.etherbase 0x0000000000000000000000000000000000000000` replacing the `0x0` address with your own wallet address.
-
-With your node running, start the GPU mining script by double-clicking on it or running it via the terminal. On Windows devices the batchfile script to run the GPU miner is named `BitnetGPUMiner.cmd` and on unix devices, `bitnet.gpuminer.sh`.
-
-Once running, the script will automatically start mining using your GPU hardware and sending the rewards to the wallet specified.
-
-The script uses `ethminer` and  you can personalize how you want to run it by modifying the script with any text editor. For more information abour `ethminer` please visit https://github.com/ethereum-mining/ethminer.
-
-## Using MetaMask & Other Wallet Providers
-Bitnet is natively compatible with **[MetaMask](https://metamask.io/download/)** and a range of other well established wallet providers. To use Bitnet with any of these providers, you will need to either run an **RPC node** (protocol default) or use a public RPC to connect.
-
-**[Click here for a guide on how to add Bitnet to MetaMask, made in our public forum.](https://bitnet.money/forum/showthread.php?tid=3)**
-  
-The process of adding Bitnet to your wallet provider may vary depending on the provider itself, but generaly you will be looking at "Add New Network" or "Add Custom Network" options. Once your RPC node is running, you can use the parameters below to connect:
-
-- **Network Name:** Bitnet
-- **Network ID:** 210
-- **RPC URL:** http://127.0.0.1:8545/
-- **Currency Symbol:** BTN
-
-*Note that for `localhost`  connections you will use `http` insted of `https`.*
-
-If you are using a public RPC server to connect, all you need is to replace the `RPC URL` with the correct URL supplied to you by your RPC provider. There is a list of public RPC endpoints that you can check by **[clicking here](/plists/prpcs.md)**.
-
-## Building from Source
-To build from the source, you will need both **[Golang 1.19+](https://go.dev/dl/)** and a **C Compiler** installed to build Bitnet. If any of the two is missing or corrupt, your build will not work.
-  
-*You don't need to build from the source to run a local node. For that, you can just download the latest pre-built version for your operational system and use it to run your node. Go to the [the releases page](https://github.com/masayoshikob/bitnet/releases) for download links.*
-
-### Linux and MacOS
-You can build Bitnet in your Linux or MacOS device using the command below:
-
-```
-git clone https://github.com/masayoshikob/bitnet.git && cd bitnet && go run build/ci.go install ./cmd/bitnet
-```
-
-### Windows
-You can build Bitnet in your Windows device using the command below:
-```
-git clone https://github.com/masayoshikob/bitnet.git ; cd bitnet ; .\build.win
-```
-
-This will open the Bitnet Build Assistant for Windows on your console, and you
-can use the menu options to build Bitnet from your source code.
+**[Running a Node](wiki/Run-a-Node)**  
+**[Generating Bitnets via Mining](wiki/Mining-Bitnet)**  
+**[Using MetaMask & Other Wallet Providers](wiki/Wallet-Setup)**  
+**[Public Lists](plists/readme.md)**  
+**[Building from Source](wiki/Building-from-Source)**  
+**[Outro](#Outro)**
 
 ## Outro
 **Mainnet Genesis Hash**

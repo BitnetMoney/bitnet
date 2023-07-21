@@ -4,6 +4,40 @@
 # or operating system, you probably want to add a global ignore instead:
 #   git config --global core.excludesfile ~/.gitignore_global
 
+#*
+.#*
+*#
+*~
+.project
+.settings
+
+# Build folders
+/build/_workspace/
+/build/cache/
+/build/bin/
+/geth*.zip
+
+# IdeaIDE
+.idea
+
+# VS Code
+.vscode
+
+# Binaries (for saving repo storage space)
+/prebuild/v0.0.1a/win/bitnet.exe
+/prebuild/v0.0.1a/unix/bitnet
+/prebuild/v0.0.2a/win/bitnet.exe
+/prebuild/v0.0.2a/unix/bitnet
+/prebuild/v0.0.3b/win/bitnet.exe
+/prebuild/v0.0.3b/linux/bitnet
+/prebuild/v0.0.3b/mac/bitnet
+
+# Other
+**/yarn-error.log
+logs/
+NULL
+/bitnet_prebuild
+/bitnet_test
 /tmp
 */**/*un~
 */**/*.test
@@ -14,33 +48,3 @@
 */**/*tx_database*
 */**/*dapps*
 build/_vendor/pkg
-
-#*
-.#*
-*#
-*~
-.project
-.settings
-
-# used by the makefile
-/build/_workspace/
-/build/cache/
-/build/bin/
-/geth*.zip
-
-# travis
-profile.tmp
-profile.cov
-
-# IdeaIDE
-.idea
-
-# VS Code
-.vscode
-
-**/yarn-error.log
-logs/
-NULL
-
-/bitnet_prebuild
-/bitnet_test
