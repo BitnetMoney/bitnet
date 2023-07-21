@@ -4,9 +4,9 @@
 First beta version of Bitnet.
 - Several bug fixes
 - Script updates for all operational systems
-- Bitnet doesn't start on an RPC node by default anymore
+- Bitnet doesn't start on a RPC node by default anymore
 - Security updates with initialization flags
-- Updated defauit port to 30210 to address conflicts with the 30303 port
+- Updated default port to 30210 to address conflicts with the 30303 port
 - Increased default maximum node peers from 50 to 75
 - Enabled node discovery by default
 - Updated list of static nodes
