@@ -24,13 +24,23 @@
 .vscode
 
 # Binaries (for saving repo storage space)
+## v0.0.1a
 /prebuild/v0.0.1a/win/bitnet.exe
+/prebuild/v0.0.1a/win/Win64_Bitnet_v0.0.1a.zip
 /prebuild/v0.0.1a/unix/bitnet
+/prebuild/v0.0.1a/unix/Unix_Bitnet_v0.0.1a.tar.gz
+## v0.0.2a
 /prebuild/v0.0.2a/win/bitnet.exe
+/prebuild/v0.0.2a/win/Win64_Bitnet_v0.0.2a.zip
 /prebuild/v0.0.2a/unix/bitnet
+/prebuild/v0.0.2a/unix/Unix_Bitnet_v0.0.2a.tar.gz
+## v0.0.3b
 /prebuild/v0.0.3b/win/bitnet.exe
+/prebuild/v0.0.3b/win/Win64_Bitnet_v0.0.3b.zip
 /prebuild/v0.0.3b/linux/bitnet
+/prebuild/v0.0.3b/linux/Linux_Bitnet_v0.0.3b.tar.gz
 /prebuild/v0.0.3b/mac/bitnet
+/prebuild/v0.0.3b/mac/MacOS_Bitnet_v0.0.3b.tar.gz
 
 # Other
 **/yarn-error.log
