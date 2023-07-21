@@ -6,8 +6,8 @@ It has no pre-mined supply, and for a while after the launch, anyone with a regu
 *There is only one way forward, and it is decentralization.*
 
 **[Visit Website](https://bitnet.money/)**  
-**[Wiki/Docs](/BitnetMoney/bitnet/wiki)**
-**[Download](https://github.com/BitnetMoney/bitnet/releases)**
+**[Wiki/Docs](https://github.com/BitnetMoney/bitnet/wiki)**  
+**[Download](https://github.com/BitnetMoney/bitnet/releases)**  
 
 ## Building from Source
 
