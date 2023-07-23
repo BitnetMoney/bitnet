@@ -34,7 +34,7 @@ You can build Bitnet in your Linux or MacOS device using the command below:
 ```
 git clone https://github.com/BitnetMoney/bitnet.git && cd bitnet && bash build.linux.sh
 ```
-*Replace it with `bash.build.mac` if you're using a MacOS device.*
+*Replace it with `bash build.mac.sh` if you're using a MacOS device.*
 
 ### Windows
 You can build Bitnet in your Windows device using the command below:
