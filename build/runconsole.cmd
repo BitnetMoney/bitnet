@@ -1,0 +1,1 @@
+.\bin\bitnet attach \\.\pipe\bitnet

@@ -691,12 +691,12 @@ func (api *ConsensusAPI) heartbeat() {
 			if time.Since(offlineLogged) > beaconUpdateWarnFrequency {
 				if lastForkchoiceUpdate.IsZero() && lastNewPayloadUpdate.IsZero() {
 					if lastTransitionUpdate.IsZero() {
-						log.Warn("Post-merge network, but no beacon client seen. Please launch one to follow the chain!")
+						log.Warn("Syncing error. Please restart your Bitnet node and make sure you have your --config flag enabled and properly set.")
 					} else {
-						log.Warn("Beacon client online, but never received consensus updates. Please ensure your beacon client is operational to follow the chain!")
+						log.Warn("Syncing error. Please restart your Bitnet node and make sure you have your --config flag enabled and properly set.")
 					}
 				} else {
-					log.Warn("Beacon client online, but no consensus updates received in a while. Please fix your beacon client to follow the chain!")
+					log.Warn("Syncing error. Please restart your Bitnet node and make sure you have your --config flag enabled and properly set.")
 				}
 				offlineLogged = time.Now()
 			}

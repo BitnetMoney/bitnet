@@ -48,5 +48,5 @@ can use the menu options to build Bitnet from your source code.
 ## Outro
 **Mainnet Genesis Hash**
 ```
-0xa3cc7f928cebbc82a199e3c506104df317244e5de86018b8753ef3096f674f1a0xa3cc7f928cebbc82a199e3c506104df317244e5de86018b8753ef3096f674f1a
+0xa3cc7f928cebbc82a199e3c506104df317244e5de86018b8753ef3096f674f1a
 ```
