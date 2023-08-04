@@ -12,14 +12,6 @@
 # from, out of or in connection with the software or the use or
 # other dealings in the software.
 #
-# This script will regiter and initiate the mainnet genesis file
-# and start your node. You can change the flag "--config" from
-# ".rpc" (default) to ".node" if you do not want to accept any
-# incoming API requests from users. By doing that you will also
-# block most wallets (such as MetaMask, for example) from connecting
-# to your node, but you will still be able to use the console to
-# send transactions and make API calls.
-#
 # This script requires chmod 755.
 
 # Register and initiates the mainnet genesis file.
