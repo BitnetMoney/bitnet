@@ -120,7 +120,7 @@ func remoteConsole(ctx *cli.Context) error {
 	}
 	client, err := utils.DialRPCWithHeaders(endpoint, ctx.StringSlice(utils.HttpHeaderFlag.Name))
 	if err != nil {
-		utils.Fatalf("Unable to attach to remote geth: %v", err)
+		utils.Fatalf("Unable to attach to remote Bitnet node: %v", err)
 	}
 	config := console.Config{
 		DataDir: utils.MakeDataDir(ctx),
