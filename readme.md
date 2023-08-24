@@ -6,9 +6,42 @@ It has no pre-mined supply, and for a while after the launch, anyone with a regu
 
 *There is only one way forward, and it is decentralization.*
 
-**[Visit Website](https://bitnet.money/)**  
-**[Wiki/Docs](https://github.com/BitnetMoney/bitnet/wiki)**  
-**[Download](https://github.com/BitnetMoney/bitnet/releases)**  
+🤓 **Geek Stats & Info:**
+
+**Block Reward:** 1  
+**Uncle Reward:** 0.875 1st / 0.75 2nd / 0.25 3rd  
+**Pre-mined Coins:** No  
+**Total Supply:** ∞  
+**Consensus:** Proof of Work  
+**Algorithm:** Ethash  
+**Target Block Time:** 15s  
+**Smart Contracts Support:** Yes  
+
+🌐 **Connect:**
+
+**Network Name:** Bitnet  
+**RPC URL:** https://rpc.bitnet.money/  
+**Chain ID:** 210  
+**Currency Symbol:** BTN  
+**Block Explorer URL:** https://btnscan.com/  
+
+🔎 **Explore, Mine, Use:**
+
+- [Paper](https://bitnet.money/d/bitnet.pdf)
+- [Wallets](https://bitnet.money/wallets)
+- [Mining Pools](https://bitnet.money/mining-pools)
+- [Exchanges](https://bitnet.money/buy)
+
+🔗 **Useful Links:**
+
+- [Website](https://bitnet.money/)
+- [Forum](https://bitnet.money/forum)
+- [Brand Kit](https://github.com/BitnetMoney/public-brand-kit)
+- [Coingecko](https://www.coingecko.com/en/coins/bitnet)
+- [Telegram](https://t.me/Bitnet_Official_Group)
+- [X (Twitter)](https://twitter.com/BitnetMoney)
+- [Reddit](https://www.reddit.com/r/BitnetMoney)
+- [GitHub](https://github.com/BitnetMoney)
 
 ## Building from Source
 
