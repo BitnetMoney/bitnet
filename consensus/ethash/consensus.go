@@ -44,35 +44,35 @@ var (
 	// calcDifficultyEip5133 is the difficulty adjustment algorithm as specified by EIP 5133.
 	// It offsets the bomb a total of 11.4M blocks.
 	// Specification EIP-5133: https://eips.ethereum.org/EIPS/eip-5133
-	calcDifficultyEip5133 = makeDifficultyCalculator(big.NewInt(11_400_000))
+	calcDifficultyEip5133 = makeDifficultyCalculator()
 
 	// calcDifficultyEip4345 is the difficulty adjustment algorithm as specified by EIP 4345.
 	// It offsets the bomb a total of 10.7M blocks.
 	// Specification EIP-4345: https://eips.ethereum.org/EIPS/eip-4345
-	calcDifficultyEip4345 = makeDifficultyCalculator(big.NewInt(10_700_000))
+	calcDifficultyEip4345 = makeDifficultyCalculator()
 
 	// calcDifficultyEip3554 is the difficulty adjustment algorithm as specified by EIP 3554.
 	// It offsets the bomb a total of 9.7M blocks.
 	// Specification EIP-3554: https://eips.ethereum.org/EIPS/eip-3554
-	calcDifficultyEip3554 = makeDifficultyCalculator(big.NewInt(9700000))
+	calcDifficultyEip3554 = makeDifficultyCalculator()
 
 	// calcDifficultyEip2384 is the difficulty adjustment algorithm as specified by EIP 2384.
 	// It offsets the bomb 4M blocks from Constantinople, so in total 9M blocks.
 	// Specification EIP-2384: https://eips.ethereum.org/EIPS/eip-2384
-	calcDifficultyEip2384 = makeDifficultyCalculator(big.NewInt(9000000))
+	calcDifficultyEip2384 = makeDifficultyCalculator()
 
 	// calcDifficultyConstantinople is the difficulty adjustment algorithm for Constantinople.
 	// It returns the difficulty that a new block should have when created at time given the
 	// parent block's time and difficulty. The calculation uses the Byzantium rules, but with
 	// bomb offset 5M.
 	// Specification EIP-1234: https://eips.ethereum.org/EIPS/eip-1234
-	calcDifficultyConstantinople = makeDifficultyCalculator(big.NewInt(5000000))
+	calcDifficultyConstantinople = makeDifficultyCalculator()
 
 	// calcDifficultyByzantium is the difficulty adjustment algorithm. It returns
 	// the difficulty that a new block should have when created at time given the
 	// parent block's time and difficulty. The calculation uses the Byzantium rules.
 	// Specification EIP-649: https://eips.ethereum.org/EIPS/eip-649
-	calcDifficultyByzantium = makeDifficultyCalculator(big.NewInt(3000000))
+	calcDifficultyByzantium = makeDifficultyCalculator()
 )
 
 // Various error messages to mark blocks invalid. These should be private to
@@ -370,10 +370,9 @@ var (
 // makeDifficultyCalculator creates a difficultyCalculator with the given bomb-delay.
 // the difficulty is calculated with Byzantium rules, which differs from Homestead in
 // how uncles affect the calculation
-func makeDifficultyCalculator(bombDelay *big.Int) func(time uint64, parent *types.Header) *big.Int {
+func makeDifficultyCalculator() func(time uint64, parent *types.Header) *big.Int {
 	// Note, the calculations below looks at the parent number, which is 1 below
 	// the block number. Thus we remove one from the delay given
-	bombDelayFromParent := new(big.Int).Sub(bombDelay, big1)
 	return func(time uint64, parent *types.Header) *big.Int {
 		// https://github.com/ethereum/EIPs/issues/100.
 		// algorithm:
@@ -408,23 +407,6 @@ func makeDifficultyCalculator(bombDelay *big.Int) func(time uint64, parent *type
 		// minimum difficulty can ever be (before exponential factor)
 		if x.Cmp(params.MinimumDifficulty) < 0 {
 			x.Set(params.MinimumDifficulty)
-		}
-		// calculate a fake block number for the ice-age delay
-		// Specification: https://eips.ethereum.org/EIPS/eip-1234
-		fakeBlockNumber := new(big.Int)
-		if parent.Number.Cmp(bombDelayFromParent) >= 0 {
-			fakeBlockNumber = fakeBlockNumber.Sub(parent.Number, bombDelayFromParent)
-		}
-		// for the exponential factor
-		periodCount := fakeBlockNumber
-		periodCount.Div(periodCount, expDiffPeriod)
-
-		// the exponential factor, commonly referred to as "the bomb"
-		// diff = diff + 2^(periodCount - 2)
-		if periodCount.Cmp(big1) > 0 {
-			y.Sub(periodCount, big2)
-			y.Exp(big2, y, nil)
-			x.Add(x, y)
 		}
 		return x
 	}

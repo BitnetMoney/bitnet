@@ -129,7 +129,6 @@ func (f *fuzzer) fuzz() int {
 	}{
 		{ethash.FrontierDifficultyCalculator, ethash.CalcDifficultyFrontierU256},
 		{ethash.HomesteadDifficultyCalculator, ethash.CalcDifficultyHomesteadU256},
-		{ethash.DynamicDifficultyCalculator(bombDelay), ethash.MakeDifficultyCalculatorU256(bombDelay)},
 	} {
 		want := pair.bigFn(time, header)
 		have := pair.u256Fn(time, header)

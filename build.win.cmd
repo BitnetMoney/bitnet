@@ -12,15 +12,16 @@
 :: from, out of or in connection with the software or the use or
 :: other dealings in the software.
 ::
-:: Bitnet Build Assistant for Windows v.1.0.1
 :: This script is a user-friendly way for less experienced
 :: users to build Bitnet from the source code in their
 :: Windows devices. It still requires Golang and a C
 :: compiler installed to work properly.
 
-:build.home
+:: Bitnet Build Assistant for Windows v.1.0.2
+
+:home
     cls
-    echo Welcome to Bitnet Build Assistant for Windows
+    echo Welcome to Bitnet Build Assistant for Windows.
     echo.
     echo Please select one of the options below:
     echo 1. Build Bitnet
@@ -30,75 +31,66 @@
     echo 5. Run Linters
     echo 6. Run Test
     echo.
-        set /p opt="_"
+    set /p userChoice="Your choice: "
     echo.
-        if /i %opt% == 1 (goto build.bitnet)
-        if /i %opt% == 2 (goto build.all)
-        if /i %opt% == 3 (goto build.devtools)
-        if /i %opt% == 4 (goto clean.cache)
-        if /i %opt% == 5 (goto run.linters)
-        if /i %opt% == 6 (goto run.test) else (
-            echo Invalid option! Please try again.
-                pause >NULL
-                del NULL
-                goto build.home
-            )
+    if /i %userChoice%==1 goto build_bitnet
+    if /i %userChoice%==2 goto build_all
+    if /i %userChoice%==3 goto build_devtools
+    if /i %userChoice%==4 goto clean_cache
+    if /i %userChoice%==5 goto run_linters
+    if /i %userChoice%==6 goto run_test
+    echo Invalid option! Please try again.
+    pause >nul
+    goto home
 
-:build.bitnet
+:clean_old_binaries_and_cache
+    echo Cleaning old binaries and cache...
+    rmdir /s /q build\bin\
+    go clean -cache
+
+:build_bitnet
     echo Building Bitnet...
-        echo Searching for old binaries and cleaning old cache...
-         rmdir /s /q build\bin\
-            go clean -cache
-            go run build/ci.go install ./cmd/bitnet
-        echo Build finished. Press any key to continue.
-            pause > NULL
-            del NULL
-            exit
+    call :clean_old_binaries_and_cache
+    go run build/ci.go install ./cmd/bitnet
+    echo Build finished.
+    pause >nul
+    exit
 
-:build.all
-    echo Building Bitnet (ALL BINARIES)...
-        echo Searching for old binaries and cleaning old cache...
-            rmdir /s /q build\bin\
-            go clean -cache
-            go run build/ci.go install
-        echo Build finished. Press any key to continue.
-            pause > NULL
-            del NULL
-            exit
+:build_all
+    echo Building all binaries...
+    call :clean_old_binaries_and_cache
+    go run build/ci.go install
+    echo Build finished.
+    pause >nul
+    exit
 
-:build.devtools
+:build_devtools
     echo Installing devtools...
-	    go install golang.org/x/tools/cmd/stringer@latest
-	    go install github.com/fjl/gencodec@latest
-	    go install github.com/golang/protobuf/protoc-gen-go@latest
-	    go install ./cmd/abigen
-    echo Installation finished. Press any key to continue.
-        pause > NULL
-        del NULL
-        exit
+    go install golang.org/x/tools/cmd/stringer@latest
+    go install github.com/fjl/gencodec@latest
+    go install github.com/golang/protobuf/protoc-gen-go@latest
+    go install ./cmd/abigen
+    echo Installation finished.
+    pause >nul
+    exit
 
-:clean.cache
-    echo Searching for old binary files...
-        rmdir /s /q build\bin\
-        rmdir /s /q build/_workspace/pkg
-        go clean -cache
-    echo Cache cleanead. Press any key to continue.
-        pause > NULL
-        del NULL
-        goto build.home
+:clean_cache
+    echo Cleaning cache...
+    call :clean_old_binaries_and_cache
+    echo Cache cleared.
+    pause >nul
+    goto home
 
-:run.linters
-    echo Building linters...
-        go run build/ci.go lint
-    echo Build finished. Press any key to continue.
-        pause > NULL
-        del NULL
-        exit
+:run_linters
+    echo Running linters...
+    go run build/ci.go lint
+    echo Linters have been run.
+    pause >nul
+    exit
 
-:run.test
-    echo Initiating...
-        go run build/ci.go test
-    echo Test finished. Press any key to continue.
-        pause > NULL
-        del NULL
-        exit
+:run_test
+    echo Running tests...
+    go run build/ci.go test
+    echo Tests completed.
+    pause >nul
+    exit

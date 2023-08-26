@@ -119,7 +119,6 @@ func TestDifficultyCalculators(t *testing.T) {
 		}{
 			{FrontierDifficultyCalculator, CalcDifficultyFrontierU256},
 			{HomesteadDifficultyCalculator, CalcDifficultyHomesteadU256},
-			{DynamicDifficultyCalculator(bombDelay), MakeDifficultyCalculatorU256(bombDelay)},
 		} {
 			time := header.Time + timeDelta
 			want := pair.bigFn(time, header)
@@ -136,7 +135,7 @@ func TestDifficultyCalculators(t *testing.T) {
 }
 
 func BenchmarkDifficultyCalculator(b *testing.B) {
-	x1 := makeDifficultyCalculator(big.NewInt(1000000))
+	x1 := makeDifficultyCalculator()
 	x2 := MakeDifficultyCalculatorU256(big.NewInt(1000000))
 	h := &types.Header{
 		ParentHash: common.Hash{},

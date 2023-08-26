@@ -15,6 +15,20 @@
 # This script will built bitnet using Go. A C compiler is also
 # required for the build to succeed.
 
-echo "Building Bitnet..."
-    go run build/ci.go install ./cmd/bitnet
-echo "Build finished."
+# Function to handle failure
+handle_error() {
+    echo "Error: Script failed to build Bitnet."
+    exit 1
+}
+
+# Start building Bitnet
+echo "Starting to build Bitnet..."
+
+# Build the Bitnet core
+go run build/ci.go install ./cmd/bitnet || handle_error
+
+# Confirm build success
+echo "Build finished successfully."
+
+# Exit the script
+exit 0
