@@ -49,16 +49,18 @@
     go clean -cache
 
 :build_bitnet
-    echo Building Bitnet...
-    call :clean_old_binaries_and_cache
+    echo Searching for old binaries and cleaning old cache...
+    rmdir /s /q build\bin\
+    go clean -cache
     go run build/ci.go install ./cmd/bitnet
-    echo Build finished.
-    pause >nul
+    echo Build finished. Press any key to continue.
+    pause > NULL
+    del NULL
     exit
 
 :build_all
     echo Building all binaries...
-    call :clean_old_binaries_and_cache
+    go clean -cache
     go run build/ci.go install
     echo Build finished.
     pause >nul
@@ -76,7 +78,7 @@
 
 :clean_cache
     echo Cleaning cache...
-    call :clean_old_binaries_and_cache
+    go clean -cache
     echo Cache cleared.
     pause >nul
     goto home
