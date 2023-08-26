@@ -11,7 +11,7 @@ Should you wish to build Bitnet from source, ensure you have the following softw
 - [Golang 1.19+](https://go.dev/dl/)
 - A C Compiler
 
-> **Note**: If either of these components is missing or corrupt, the build will fail. For a pre-built version compatible with your operating system, visit our [Releases Page](/releases).
+> **Note**: If either of these components is missing or corrupt, the build will fail. For a pre-built version compatible with your operating system, visit our [Releases Page](https://github.com/BitnetMoney/bitnet/releases/).
 
 ---
 
