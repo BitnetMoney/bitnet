@@ -11,7 +11,7 @@ Should you wish to build Bitnet from source, ensure you have the following softw
 - [Golang 1.19+](https://go.dev/dl/)
 - A C Compiler
 
-> **Note**: If either of these components is missing or corrupt, the build will fail. For a pre-built version compatible with your operating system, visit our [Releases Page](/BitnetMoney/bitnet/releases).
+> **Note**: If either of these components is missing or corrupt, the build will fail. For a pre-built version compatible with your operating system, visit our [Releases Page](/releases).
 
 ---
 
@@ -52,6 +52,6 @@ This will initiate the Bitnet Build Assistant for Windows, guiding you through t
 
 The Mainnet Genesis Hash is as follows:
 
-code
+```
 0xa3cc7f928cebbc82a199e3c506104df317244e5de86018b8753ef3096f674f1a
-code
+```
