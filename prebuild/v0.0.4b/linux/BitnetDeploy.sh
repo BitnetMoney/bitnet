@@ -19,3 +19,4 @@
 echo "Deploying Bitnet..."
 sudo mv bitnet /usr/bin
 echo "Deployment finished! You can now use the bitnet binary from anywhere."
+echo "Don't forget to make the appropriate changes to your script files."

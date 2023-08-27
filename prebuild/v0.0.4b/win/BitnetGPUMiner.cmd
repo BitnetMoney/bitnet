@@ -19,4 +19,4 @@
 title Bitnet GPU Miner
 color 07
 
-.\ethminer -P http://127.0.0.1:8545/ --noeval --report-hashrate --response-timeout 1800 --work-timeout 1800
+.\miner -P http://127.0.0.1:8545/ --noeval --report-hashrate --response-timeout 600 --work-timeout 3600

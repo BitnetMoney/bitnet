@@ -12,9 +12,12 @@
 # from, out of or in connection with the software or the use or
 # other dealings in the software.
 #
-# This script requires chmod 755.
+# This script gives Chmod 755 to all required binaries and scripts.
 
-# This script initiates the Javascript console that allows you
-# to control your node.
-
-./bitnet attach bitnet.db/bitnet
+echo "Initializing Chmod script..."
+sudo chmod 755 bitnet
+sudo chmod 755 Bitnet.sh
+sudo chmod 755 BitnetConsole.sh
+sudo chmod 755 BitnetGPUMiner.sh
+echo "All files processed! Now you can start your node with all"
+echo "the required permissions."

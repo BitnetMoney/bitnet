@@ -17,4 +17,4 @@
 # This script initiates the Javascript console that allows you
 # to control your node.
 
-bitnet attach bitnet.db/bitnet
+./bitnet attach bitnet.db/bitnet
