@@ -5,11 +5,12 @@
 Major security patch and improved user experience. All prior versions will be deprecated.
 
 - Updated GPU Miner binary for Microsoft Windows
+- Miner is now **disabled** by default, and needs to be enabled with flags
 - Ethash improvements and removal of ice age
 - Security patch to prevent consensus-level attacks
 - Updated scripts for all OSs
 - General bug fixes
-- Parameters updates, with new bootnodes and built-in genesis
+- Core parameters updates, with new bootnodes and built-in genesis
 - Minor updates on the JSConsole
 
 ## v.0.0.3b
