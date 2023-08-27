@@ -1,3 +1,4 @@
-## Source Download
+# Source Download
+
 You need to download the source to build the binaries for this version.
-Link will be available after launch.
+<https://github.com/BitnetMoney/bitnet/releases/tag/v0.0.4b>

@@ -2,13 +2,15 @@
 
 ## v.0.0.4b
 
-- Updated miner binary for Windows
-- Consensus improvements
+Major security patch and improved user experience. All prior versions will be deprecated.
+
+- Updated GPU Miner binary for Microsoft Windows
+- Ethash improvements and removal of ice age
 - Security patch to prevent consensus-level attacks
 - Updated scripts for all OSs
 - General bug fixes
 - Parameters updates, with new bootnodes and built-in genesis
-- Light updates on the JSConsole
+- Minor updates on the JSConsole
 
 ## v.0.0.3b
 
