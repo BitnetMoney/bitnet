@@ -4,6 +4,36 @@ Bitnet combines the decentralization of Bitcoin with the programmability of Ethe
 
 > **Insight**: *The only way forward is through decentralization.*
 
+## Important Notice For v0.0.4b Update
+
+If you have any issues syncing with the network, please try the following steps:
+
+1. If you're executing the Bitnet binary directly and in a single step, try initializing the protocol genesis before starting the `bitnet` (or `bitnet.exe` on Windows) binary. You can do that by running the command below inside your Bitnet folder - it assumes you have downloaded the latest pre-build release:
+
+```bash
+./bitnet --datadir bitnet.db init .bitnet && ./bitnet --networkid 210 --config .config
+```
+
+or, if you're on Windows:
+
+```cmd
+.\bitnet --datadir bitnet.db init .bitnet ; .\bitnet --networkid 210 --config .config
+```
+
+2. Try deleting your existing database for a full resync with the network. You can use the command below to delete the `bitnet.db` folder:
+
+```bash
+rm -r bitnet.db
+```
+
+or, if you're on Windows:
+
+```cmd
+rm bitnet.db
+```
+
+If after following the steps above you still cannot sync your node, please ask for help in one of our community channels. Most of our developers are more active on [Discord](https://discord.com/invite/dtw7rKQfRs) than in other social media platforms.
+
 ## Build From Source: Pre-Requisites
 
 Should you wish to build Bitnet from source, ensure you have the following software:
