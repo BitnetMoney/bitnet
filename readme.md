@@ -23,13 +23,13 @@ or, if you're on Windows:
 2. Try deleting your existing database for a full resync with the network. You can use the command below to delete the `bitnet.db` folder:
 
 ```bash
-rm -r bitnet.db
+rm -rf bitnet.db
 ```
 
 or, if you're on Windows:
 
 ```cmd
-rm bitnet.db
+rmdir /s /q bitnet.db
 ```
 
 If after following the steps above you still cannot sync your node, please ask for help in one of our community channels. Most of our developers are more active on [Discord](https://discord.com/invite/dtw7rKQfRs) than in other social media platforms.
