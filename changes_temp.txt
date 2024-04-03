@@ -1,0 +1,16 @@
+Temporary file to log changes made to repository before next major release.
+This file will be deleted and properly logged once all changes are processed.
+
+- Removed /prebuild entirely - versioning control and history can be done using github
+- Removed /plists entirely - not needed or should be treated on a separate repository
+- Moved contents of /bitnet folder to root (genesis and config file)
+- Renamed .bitnet to public_genesis.json (easier to understand what the file is)
+- Renamed .config to .nodeconfig (easier to understand what the file is)
+
+
+TODO
+>>> apply convention standards to repository
+>>> import smart contract standards to main core repository
+>>> refactor/recode build scripts (maybe use python or javascript?)
+>>> general cleanup and tidying of public repo
+>>> consider integrating desktop node to main core code repo (???)
