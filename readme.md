@@ -4,20 +4,20 @@ Bitnet combines the decentralization of Bitcoin with the programmability of Ethe
 
 > **Insight**: *The only way forward is through decentralization.*
 
-## Important Notice For v0.0.4b Update
+## Important Notice For Version 0.0.5 Users
 
 If you have any issues syncing with the network, please try the following steps:
 
 1. If you're executing the Bitnet binary directly and in a single step, try initializing the protocol genesis before starting the `bitnet` (or `bitnet.exe` on Windows) binary. You can do that by running the command below inside your Bitnet folder - it assumes you have downloaded the latest pre-build release:
 
 ```bash
-./bitnet --datadir bitnet.db init .bitnet && ./bitnet --networkid 210 --config .config
+./bitnet --datadir bitnet.db init .genesis && ./bitnet --networkid 210 --config .nodeconfig
 ```
 
 or, if you're on Windows:
 
 ```cmd
-.\bitnet --datadir bitnet.db init .bitnet ; .\bitnet --networkid 210 --config .config
+.\bitnet --datadir bitnet.db init .genesis ; .\bitnet --networkid 210 --config .nodeconfig
 ```
 
 2. Try deleting your existing database for a full resync with the network. You can use the command below to delete the `bitnet.db` folder:
@@ -39,33 +39,20 @@ If after following the steps above you still cannot sync your node, please ask f
 Should you wish to build Bitnet from source, ensure you have the following software:
 
 - [Golang 1.19+](https://go.dev/dl/)
-- A C Compiler
+- Python (if you want to run the build script)
+- Any C Compiler
 
-> **Note**: If either of these components is missing or corrupt, the build will fail. For a pre-built version compatible with your operating system, visit our [Releases Page](https://github.com/BitnetMoney/bitnet/releases/).
-
----
-
-### Build on Linux/MacOS
-
-Execute the following command to build Bitnet on a Linux or MacOS machine:
-
-```bash
-git clone https://github.com/BitnetMoney/bitnet.git && cd bitnet && bash build.linux.sh
-```
-
-> **MacOS Users**: Substitute `bash build.linux.sh` with `bash build.mac.sh`.
+> **Note**: If either of these components is missing or corrupt, the build will fail. For a pre-built version with binaries compatible with your operating system, visit our [Releases Page](https://github.com/BitnetMoney/bitnet/releases/).
 
 ---
 
-### Build on Windows
-
-Run the command below to build Bitnet on a Windows machine:
-
-```cmd
-git clone https://github.com/BitnetMoney/bitnet.git ; cd bitnet ; .\build.win
+You can run the following script to build Bitnet from source:
+```shell
+python build.py
 ```
 
-This will initiate the Bitnet Build Assistant for Windows, guiding you through the build process.
+Replace `python` with `python3` if your system is version-sensitive.
+
 
 ## Key Metrics
 
