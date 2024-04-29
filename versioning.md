@@ -1,5 +1,14 @@
 # Version History
 
+## v.0.0.5
+
+Security patch. Compatible with 0.0.4b.
+
+- Updated Bootnodes list to avoid infinite loopring scenario
+- Removed miner from main build
+- Updated build scripts
+- Updated directory structure
+
 ## v.0.0.4b
 
 Security patch and improved user experience. All prior versions will be deprecated.

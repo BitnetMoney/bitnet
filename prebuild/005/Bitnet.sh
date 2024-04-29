@@ -12,23 +12,12 @@
 # from, out of or in connection with the software or the use or
 # other dealings in the software.
 #
-# This script will built bitnet using Go. A C compiler is also
-# required for the build to succeed.
+# This script requires chmod 755.
 
-# Function to handle failure
-handle_error() {
-    echo "Error: Script failed to build Bitnet."
-    exit 1
-}
+# Register and initiates the mainnet genesis file.
+echo "Initiating mainnet genesis..."
+./bitnet --datadir bitnet.db init .genesis
 
-# Start building Bitnet
-echo "Starting to build Bitnet..."
-
-# Build the Bitnet core
-go run build/ci.go install ./cmd/bitnet || handle_error
-
-# Confirm build success
-echo "Build finished successfully."
-
-# Exit the script
-exit 0
+# Starts the node using the parameters specified.
+echo "Starting node..."
+./bitnet --networkid 210 --config .nodeconfig
