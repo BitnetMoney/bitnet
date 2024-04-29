@@ -1,3 +1,6 @@
+# This script builds Bitnet using Golang and GCC
+# This script is copatible with Windows, Linux, and macOS
+
 import subprocess
 import sys
 import os

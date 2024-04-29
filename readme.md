@@ -34,13 +34,22 @@ rmdir /s /q bitnet.db
 
 If after following the steps above you still cannot sync your node, please ask for help in one of our community channels. Most of our developers are more active on [Discord](https://discord.com/invite/dtw7rKQfRs) than in other social media platforms.
 
+## Install Script
+
+You can install all the necessary dependencies by running:
+```shell
+python install.py
+```
+
+Replace `python` with `python3` if your system is version-sensitive.
+
 ## Build From Source: Pre-Requisites
 
 Should you wish to build Bitnet from source, ensure you have the following software:
 
-- [Golang 1.19+](https://go.dev/dl/)
-- Python (if you want to run the build script)
-- Any C Compiler
+- [Python](https://www.python.org/downloads/)
+- [Golang 1.19+](https://go.dev/dl/) (installed by `install.py`)
+- [GCC](https://gcc.gnu.org/releases.html) (installed by `install.py`)
 
 > **Note**: If either of these components is missing or corrupt, the build will fail. For a pre-built version with binaries compatible with your operating system, visit our [Releases Page](https://github.com/BitnetMoney/bitnet/releases/).
 
@@ -52,7 +61,6 @@ python build.py
 ```
 
 Replace `python` with `python3` if your system is version-sensitive.
-
 
 ## Key Metrics
 
