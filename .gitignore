@@ -25,31 +25,35 @@
 
 # Binaries (for saving repo storage space)
 ## v0.0.1a
-/prebuild/v0.0.1a/win/bitnet.exe
-/prebuild/v0.0.1a/win/Win64_Bitnet_v0.0.1a.zip
-/prebuild/v0.0.1a/unix/bitnet
-/prebuild/v0.0.1a/unix/Unix_Bitnet_v0.0.1a.tar.gz
+/prebuild/001a/win/bitnet.exe
+/prebuild/001a/win/Win64_Bitnet_v0.0.1a.zip
+/prebuild/001a/unix/bitnet
+/prebuild/001a/unix/Unix_Bitnet_v0.0.1a.tar.gz
 ## v0.0.2a
-/prebuild/v0.0.2a/win/bitnet.exe
-/prebuild/v0.0.2a/win/Win64_Bitnet_v0.0.2a.zip
-/prebuild/v0.0.2a/unix/bitnet
-/prebuild/v0.0.2a/unix/Unix_Bitnet_v0.0.2a.tar.gz
+/prebuild/002a/win/bitnet.exe
+/prebuild/002a/win/Win64_Bitnet_v0.0.2a.zip
+/prebuild/002a/unix/bitnet
+/prebuild/002a/unix/Unix_Bitnet_v0.0.2a.tar.gz
 ## v0.0.3b
-/prebuild/v0.0.3b/win/bitnet.exe
-/prebuild/v0.0.3b/win/Win64_Bitnet_v0.0.3b.zip
-/prebuild/v0.0.3b/linux/bitnet
-/prebuild/v0.0.3b/linux/Linux_Bitnet_v0.0.3b.tar.gz
-/prebuild/v0.0.3b/mac/bitnet
-/prebuild/v0.0.3b/mac/MacOS_Bitnet_v0.0.3b.tar.gz
+/prebuild/003b/win/bitnet.exe
+/prebuild/003b/win/Win64_Bitnet_v0.0.3b.zip
+/prebuild/003b/linux/bitnet
+/prebuild/003b/linux/Linux_Bitnet_v0.0.3b.tar.gz
+/prebuild/003b/mac/bitnet
+/prebuild/003b/mac/MacOS_Bitnet_v0.0.3b.tar.gz
 ## v0.0.4b
-/prebuild/v0.0.4b/win/bitnet.exe
-/prebuild/v0.0.4b/win/Win64_Bitnet_v0.0.4b.zip
-/prebuild/v0.0.4b/linux/bitnet
-/prebuild/v0.0.4b/linux/Linux_Bitnet_v0.0.4b.tar.gz
-/prebuild/v0.0.4b/mac/bitnet
-/prebuild/v0.0.4b/mac/MacOS_Bitnet_v0.0.4b.tar.gz
+/prebuild/004b/win/bitnet.exe
+/prebuild/004b/win/Win64_Bitnet_v0.0.4b.zip
+/prebuild/004b/linux/bitnet
+/prebuild/004b/linux/Linux_Bitnet_v0.0.4b.tar.gz
+/prebuild/004b/mac/bitnet
+/prebuild/004b/mac/MacOS_Bitnet_v0.0.4b.tar.gz
 ## v0.0.5
-# Upcoming
+/prebuild/005/bitnet.exe
+/prebuild/005/bitnet
+/prebuild/005/Bitnet_005_Windows.zip
+/prebuild/005/Bitnet_005_Unix.tar
+/prebuild/005/Bitnet_005_Unix.tar.gz
 
 # Other
 **/yarn-error.log

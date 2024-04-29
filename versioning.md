@@ -4,9 +4,9 @@
 
 Security patch. Compatible with 0.0.4b.
 
-- Updated Bootnodes list to avoid infinite loopring scenario
+- Updated bootnodes list to prevent network split due to a potential infinite loop ring scenario
 - Removed miner from main build
-- Updated build scripts
+- Updated build and install scripts
 - Updated directory structure
 
 ## v.0.0.4b
