@@ -43,7 +43,7 @@ python install.py
 
 Replace `python` with `python3` if your system is version-sensitive.
 
-## Build From Source: Pre-Requisites
+## Build From Source
 
 Should you wish to build Bitnet from source, ensure you have the following software:
 
@@ -61,6 +61,11 @@ python build.py
 ```
 
 Replace `python` with `python3` if your system is version-sensitive.
+
+Alternatively you can bypass the Python build script by using Go and GCC directly:
+```shell
+go run build/ci.go install ./cmd/bitnet
+```
 
 ## Key Metrics
 
