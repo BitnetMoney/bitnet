@@ -85,3 +85,6 @@ The Mainnet Genesis Hash is as follows:
 ```
 0xa3cc7f928cebbc82a199e3c506104df317244e5de86018b8753ef3096f674f1a
 ```
+## Ecosystem & Explorers
+
+- [BitnetScan](https://bitnetscan.vercel.app/) - Real-time block explorer and network analytics dashboard ([Source Code](https://github.com/payiz-12/Bitnetscan))
