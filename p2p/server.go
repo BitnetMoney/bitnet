@@ -85,6 +85,12 @@ type Config struct {
 	// Disabling is useful for protocol debugging (manual topology).
 	NoDiscovery bool
 
+	// DiscoveryFilter, if set, decides which nodes found by the v4 discovery
+	// table are dialed. Each node's record is fetched first, so the filter can
+	// check entries such as the chain's fork ID. The v4 table is shared by every
+	// Ethereum-family network, so without a filter most dials go to other chains.
+	DiscoveryFilter func(*enode.Node) bool `toml:"-"`
+
 	// DiscoveryV5 specifies whether the new topic-discovery based V5 discovery
 	// protocol should be started or not.
 	DiscoveryV5 bool `toml:",omitempty"`
@@ -597,7 +603,17 @@ func (srv *Server) setupDiscovery() error {
 			return err
 		}
 		srv.ntab = ntab
-		srv.discmix.AddSource(ntab.RandomNodes())
+		iter := ntab.RandomNodes()
+		if srv.DiscoveryFilter != nil {
+			iter = enode.Filter(iter, func(n *enode.Node) bool {
+				rec, err := ntab.RequestENR(n)
+				if err != nil {
+					return false
+				}
+				return srv.DiscoveryFilter(rec)
+			})
+		}
+		srv.discmix.AddSource(iter)
 	}
 
 	// Discovery V5

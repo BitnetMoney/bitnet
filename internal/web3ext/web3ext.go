@@ -26,7 +26,43 @@ var Modules = map[string]string{
 	"txpool":   TxpoolJs,
 	"les":      LESJs,
 	"vflux":    VfluxJs,
+	"bitnet":   BitnetJs,
 }
+
+// BitnetJs gives the console the bitnet namespace. The figures without
+// arguments are properties (bitnet.minerShares); the RPC methods also take an
+// optional window and risk.
+const BitnetJs = `
+web3._extend({
+	property: 'bitnet',
+	methods: [
+		new web3._extend.Method({
+			name: 'confirmationsFor',
+			call: 'bitnet_confirmationsFor',
+			params: 2,
+			inputFormatter: [null, null]
+		}),
+	],
+	properties: [
+		new web3._extend.Property({
+			name: 'minerShares',
+			getter: 'bitnet_minerShares'
+		}),
+		new web3._extend.Property({
+			name: 'confirmations',
+			getter: 'bitnet_confirmations'
+		}),
+		new web3._extend.Property({
+			name: 'reorgs',
+			getter: 'bitnet_reorgs'
+		}),
+		new web3._extend.Property({
+			name: 'supply',
+			getter: 'bitnet_supply'
+		}),
+	]
+});
+`
 
 const CliqueJs = `
 web3._extend({

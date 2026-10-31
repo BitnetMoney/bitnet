@@ -64,6 +64,7 @@ type Ethereum struct {
 
 	// Handlers
 	txPool             *txpool.TxPool
+	issuance           *issuanceIndex // supply checkpoints for bitnet_supply
 	blockchain         *core.BlockChain
 	handler            *handler
 	ethDialCandidates  enode.Iterator
@@ -199,6 +200,10 @@ func New(stack *node.Node, config *ethconfig.Config) (*Ethereum, error) {
 		return nil, err
 	}
 	eth.bloomIndexer.Start(eth.blockchain)
+	eth.blockchain.SetMaxReorgDepth(config.MaxReorgDepth)
+	eth.issuance = newIssuanceIndex(eth.blockchain, chainDb)
+	// Only dial discovered nodes that are on this chain.
+	eth.p2pServer.DiscoveryFilter = nodeFilter(eth.blockchain)
 
 	if config.TxPool.Journal != "" {
 		config.TxPool.Journal = stack.ResolvePath(config.TxPool.Journal)
@@ -309,6 +314,9 @@ func (s *Ethereum) APIs() []rpc.API {
 		}, {
 			Namespace: "net",
 			Service:   s.netRPCService,
+		}, {
+			Namespace: "bitnet",
+			Service:   NewBitnetAPI(s.blockchain, s.txPool, s.issuance),
 		},
 	}...)
 }
@@ -501,6 +509,9 @@ func (s *Ethereum) Start() error {
 	// Regularly update shutdown marker
 	s.shutdownTracker.Start()
 
+	// Build the supply checkpoints in the background
+	s.issuance.start()
+
 	// Figure out a max peers count based on the server limits
 	maxPeers := s.p2pServer.MaxPeers
 	if s.config.LightServ > 0 {
@@ -527,6 +538,7 @@ func (s *Ethereum) Stop() error {
 	close(s.closeBloomHandler)
 	s.txPool.Stop()
 	s.miner.Close()
+	s.issuance.stop()
 	s.blockchain.Stop()
 	s.engine.Close()
 
@@ -537,4 +549,11 @@ func (s *Ethereum) Stop() error {
 	s.eventMux.Stop()
 
 	return nil
+}
+
+// nodeFilter keeps discovered nodes whose `eth` record carries a fork ID
+// compatible with this chain. It lives outside New, where the local `eth`
+// variable would hide the protocol package.
+func nodeFilter(chain *core.BlockChain) func(*enode.Node) bool {
+	return eth.NewNodeFilter(chain)
 }

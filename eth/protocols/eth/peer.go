@@ -83,6 +83,7 @@ type Peer struct {
 	reqDispatch chan *request  // Dispatch channel to send requests and track then until fulfilment
 	reqCancel   chan *cancel   // Dispatch channel to cancel pending requests and untrack them
 	resDispatch chan *response // Dispatch channel to fulfil pending requests and untrack them
+	reqLookup   chan *lookup   // Dispatch channel to look up a pending request without fulfilling it
 
 	term chan struct{} // Termination channel to stop the broadcasters
 	lock sync.RWMutex  // Mutex protecting the internal fields
@@ -105,6 +106,7 @@ func NewPeer(version uint, p *p2p.Peer, rw p2p.MsgReadWriter, txpool TxPool) *Pe
 		reqDispatch:     make(chan *request),
 		reqCancel:       make(chan *cancel),
 		resDispatch:     make(chan *response),
+		reqLookup:       make(chan *lookup),
 		txpool:          txpool,
 		term:            make(chan struct{}),
 	}

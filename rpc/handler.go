@@ -57,6 +57,9 @@ type handler struct {
 	log            log.Logger
 	allowSubscribe bool
 
+	batchRequestLimit    int // most calls in one batch, 0 for no limit
+	batchResponseMaxSize int // most response bytes for one batch, 0 for no limit
+
 	subLock    sync.Mutex
 	serverSubs map[ID]*Subscription
 }
@@ -130,16 +133,15 @@ func (b *batchCallBuffer) write(ctx context.Context, conn jsonWriter) {
 	b.doWrite(ctx, conn, false)
 }
 
-// timeout sends the responses added so far. For the remaining unanswered call
-// messages, it sends a timeout error response.
-func (b *batchCallBuffer) timeout(ctx context.Context, conn jsonWriter) {
+// respondWithError sends the responses added so far. For the remaining unanswered
+// call messages, it responds with the given error.
+func (b *batchCallBuffer) respondWithError(ctx context.Context, conn jsonWriter, err error) {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 
 	for _, msg := range b.calls {
 		if !msg.isNotification() {
-			resp := msg.errorResponse(&internalServerError{errcodeTimeout, errMsgTimeout})
-			b.resp = append(b.resp, resp)
+			b.resp = append(b.resp, msg.errorResponse(err))
 		}
 	}
 	b.doWrite(ctx, conn, true)
@@ -164,6 +166,13 @@ func (h *handler) handleBatch(msgs []*jsonrpcMessage) {
 		h.startCallProc(func(cp *callProc) {
 			resp := errorMessage(&invalidRequestError{"empty batch"})
 			h.conn.writeJSON(cp.ctx, resp, true)
+		})
+		return
+	}
+	// Apply the limit on the number of requests in a batch.
+	if h.batchRequestLimit != 0 && len(msgs) > h.batchRequestLimit {
+		h.startCallProc(func(cp *callProc) {
+			h.respondWithBatchTooLarge(cp, msgs)
 		})
 		return
 	}
@@ -195,10 +204,12 @@ func (h *handler) handleBatch(msgs []*jsonrpcMessage) {
 		if timeout, ok := ContextRequestTimeout(cp.ctx); ok {
 			timer = time.AfterFunc(timeout, func() {
 				cancel()
-				callBuffer.timeout(cp.ctx, h.conn)
+				err := &internalServerError{errcodeTimeout, errMsgTimeout}
+				callBuffer.respondWithError(cp.ctx, h.conn, err)
 			})
 		}
 
+		responseBytes := 0
 		for {
 			// No need to handle rest of calls if timed out.
 			if cp.ctx.Err() != nil {
@@ -210,6 +221,16 @@ func (h *handler) handleBatch(msgs []*jsonrpcMessage) {
 			}
 			resp := h.handleCallMsg(cp, msg)
 			callBuffer.pushResponse(resp)
+			// Stop once the responses exceed the size limit; the remaining calls
+			// get an error.
+			if resp != nil && h.batchResponseMaxSize != 0 {
+				responseBytes += len(resp.Result)
+				if responseBytes > h.batchResponseMaxSize {
+					err := &internalServerError{errcodeResponseTooLarge, errMsgResponseTooLarge}
+					callBuffer.respondWithError(cp.ctx, h.conn, err)
+					break
+				}
+			}
 		}
 		if timer != nil {
 			timer.Stop()
@@ -220,6 +241,20 @@ func (h *handler) handleBatch(msgs []*jsonrpcMessage) {
 			n.activate()
 		}
 	})
+}
+
+// respondWithBatchTooLarge answers a batch over the size limit with one error.
+// JSON-RPC has no way to report an error for a whole batch, so the error carries
+// the id of the first call in it.
+func (h *handler) respondWithBatchTooLarge(cp *callProc, batch []*jsonrpcMessage) {
+	resp := errorMessage(&invalidRequestError{errMsgBatchTooLarge})
+	for _, msg := range batch {
+		if msg.isCall() {
+			resp.ID = msg.ID
+			break
+		}
+	}
+	h.conn.writeJSON(cp.ctx, []*jsonrpcMessage{resp}, true)
 }
 
 // handleMsg handles a single message.

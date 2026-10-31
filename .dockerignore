@@ -1,0 +1,8 @@
+# Keep the build context to the source: the binaries checked into the
+# repository and the git history are large and not needed for a build.
+.git
+prebuild
+ethminer
+build/bin
+build/_workspace
+**/*_test.go

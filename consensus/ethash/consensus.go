@@ -661,3 +661,27 @@ func accumulateRewards(config *params.ChainConfig, state *state.StateDB, header 
 	}
 	state.AddBalance(header.Coinbase, reward)
 }
+
+// Issuance returns the coins a block creates: exactly what accumulateRewards
+// credits to its miner and to the miners of its uncles. Fees only move coins
+// between accounts, so the supply after a block is the genesis allocation plus
+// the issuance of every block up to it.
+func Issuance(config *params.ChainConfig, header *types.Header, uncles []*types.Header) *big.Int {
+	blockReward := FrontierBlockReward
+	if config.IsByzantium(header.Number) {
+		blockReward = ByzantiumBlockReward
+	}
+	if config.IsConstantinople(header.Number) {
+		blockReward = ConstantinopleBlockReward
+	}
+	total := new(big.Int).Set(blockReward)
+	for _, uncle := range uncles {
+		r := new(big.Int).Add(uncle.Number, big8)
+		r.Sub(r, header.Number)
+		r.Mul(r, blockReward)
+		r.Div(r, big8)
+		total.Add(total, r)
+		total.Add(total, new(big.Int).Div(blockReward, big32))
+	}
+	return total
+}

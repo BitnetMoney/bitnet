@@ -135,7 +135,7 @@ var (
 	// This is the version of Go that will be downloaded by
 	//
 	//     go run ci.go install -dlgo
-	dlgoVersion = "1.20.3"
+	dlgoVersion = "1.27.3"
 
 	// This is the version of Go that will be used to bootstrap the PPA builder.
 	//
@@ -220,6 +220,11 @@ func doInstall(cmdline []string) {
 
 	// We use -trimpath to avoid leaking local paths into the built executables.
 	gobuild.Args = append(gobuild.Args, "-trimpath")
+
+	// Leave out the version control state Go would read from the checkout: the
+	// commit and its date are set explicitly above, so a build from a source
+	// archive and one from a git checkout of the same commit are identical.
+	gobuild.Args = append(gobuild.Args, "-buildvcs=false")
 
 	// Show packages during build.
 	gobuild.Args = append(gobuild.Args, "-v")

@@ -372,6 +372,9 @@ func (n *Node) obtainJWTSecret(cliParam string) ([]byte, error) {
 // startup. It's not meant to be called at any time afterwards as it makes certain
 // assumptions about the state of the node.
 func (n *Node) startRPC() error {
+	if err := checkRPCExposure(n.config); err != nil {
+		return err
+	}
 	// Filter out personal api
 	var apis []rpc.API
 	for _, api := range n.rpcAPIs {
@@ -408,6 +411,9 @@ func (n *Node) startRPC() error {
 			Vhosts:             n.config.HTTPVirtualHosts,
 			Modules:            n.config.HTTPModules,
 			prefix:             n.config.HTTPPathPrefix,
+
+			batchItemLimit:         n.config.BatchRequestLimit,
+			batchResponseSizeLimit: n.config.BatchResponseMaxSize,
 		}); err != nil {
 			return err
 		}
@@ -424,6 +430,9 @@ func (n *Node) startRPC() error {
 			Modules: n.config.WSModules,
 			Origins: n.config.WSOrigins,
 			prefix:  n.config.WSPathPrefix,
+
+			batchItemLimit:         n.config.BatchRequestLimit,
+			batchResponseSizeLimit: n.config.BatchResponseMaxSize,
 		}); err != nil {
 			return err
 		}

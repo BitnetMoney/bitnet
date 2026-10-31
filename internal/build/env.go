@@ -139,7 +139,8 @@ func getDate(commit string) string {
 	if err != nil {
 		panic(fmt.Sprintf("failed to parse git commit date: %v", err))
 	}
-	return time.Unix(date, 0).Format("20060102")
+	// UTC, so builds in different time zones embed the same date.
+	return time.Unix(date, 0).UTC().Format("20060102")
 }
 
 func applyEnvFlags(env Environment) Environment {

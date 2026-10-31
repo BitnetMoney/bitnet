@@ -26,6 +26,7 @@ import (
 	"github.com/ethereum/go-ethereum/p2p"
 	"github.com/ethereum/go-ethereum/p2p/enode"
 	"github.com/ethereum/go-ethereum/p2p/enr"
+	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/trie"
 )
 
@@ -168,8 +169,15 @@ func HandleMessage(backend Backend, peer *Peer) error {
 
 	case msg.Code == AccountRangeMsg:
 		// A range of accounts arrived to one of our previous requests
-		res := new(AccountRangePacket)
-		if err := msg.Decode(res); err != nil {
+		var env accountRangeEnvelope
+		if err := msg.Decode(&env); err != nil {
+			return fmt.Errorf("%w: message %v: %v", errDecode, msg, err)
+		}
+		res := &AccountRangePacket{ID: env.ID}
+		if err := decodeLimitedList(env.Proof, maxProofNodes, &res.Proof); err != nil {
+			return fmt.Errorf("%w: message %v: proof: %v", errDecode, msg, err)
+		}
+		if err := rlp.DecodeBytes(env.Accounts, &res.Accounts); err != nil {
 			return fmt.Errorf("%w: message %v: %v", errDecode, msg, err)
 		}
 		// Ensure the range is monotonically increasing
@@ -200,9 +208,16 @@ func HandleMessage(backend Backend, peer *Peer) error {
 
 	case msg.Code == StorageRangesMsg:
 		// A range of storage slots arrived to one of our previous requests
-		res := new(StorageRangesPacket)
-		if err := msg.Decode(res); err != nil {
+		var env storageRangesEnvelope
+		if err := msg.Decode(&env); err != nil {
 			return fmt.Errorf("%w: message %v: %v", errDecode, msg, err)
+		}
+		res := &StorageRangesPacket{ID: env.ID}
+		if err := decodeLimitedList(env.Proof, maxProofNodes, &res.Proof); err != nil {
+			return fmt.Errorf("%w: message %v: proof: %v", errDecode, msg, err)
+		}
+		if err := decodeLimitedList(env.Slots, maxStorageSetsPerResponse, &res.Slots); err != nil {
+			return fmt.Errorf("%w: message %v: slots: %v", errDecode, msg, err)
 		}
 		// Ensure the ranges are monotonically increasing
 		for i, slots := range res.Slots {
@@ -233,8 +248,12 @@ func HandleMessage(backend Backend, peer *Peer) error {
 
 	case msg.Code == ByteCodesMsg:
 		// A batch of byte codes arrived to one of our previous requests
-		res := new(ByteCodesPacket)
-		if err := msg.Decode(res); err != nil {
+		var env byteCodesEnvelope
+		if err := msg.Decode(&env); err != nil {
+			return fmt.Errorf("%w: message %v: %v", errDecode, msg, err)
+		}
+		res := &ByteCodesPacket{ID: env.ID}
+		if err := decodeLimitedList(env.Codes, maxCodeRequestCount, &res.Codes); err != nil {
 			return fmt.Errorf("%w: message %v: %v", errDecode, msg, err)
 		}
 		requestTracker.Fulfil(peer.id, peer.version, ByteCodesMsg, res.ID)
@@ -260,8 +279,12 @@ func HandleMessage(backend Backend, peer *Peer) error {
 
 	case msg.Code == TrieNodesMsg:
 		// A batch of trie nodes arrived to one of our previous requests
-		res := new(TrieNodesPacket)
-		if err := msg.Decode(res); err != nil {
+		var env trieNodesEnvelope
+		if err := msg.Decode(&env); err != nil {
+			return fmt.Errorf("%w: message %v: %v", errDecode, msg, err)
+		}
+		res := &TrieNodesPacket{ID: env.ID}
+		if err := decodeLimitedList(env.Nodes, maxTrieRequestCount, &res.Nodes); err != nil {
 			return fmt.Errorf("%w: message %v: %v", errDecode, msg, err)
 		}
 		requestTracker.Fulfil(peer.id, peer.version, TrieNodesMsg, res.ID)

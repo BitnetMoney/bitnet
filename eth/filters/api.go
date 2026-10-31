@@ -140,11 +140,15 @@ func (api *FilterAPI) NewPendingTransactions(ctx context.Context, fullTx *bool) 
 		return &rpc.Subscription{}, rpc.ErrNotificationsUnsupported
 	}
 
-	rpcSub := notifier.CreateSubscription()
+	// Install the filter before the subscription id goes back to the client, so
+	// that a transaction the client sends right after subscribing is not missed.
+	var (
+		rpcSub       = notifier.CreateSubscription()
+		txs          = make(chan []*types.Transaction, 128)
+		pendingTxSub = api.events.SubscribePendingTxs(txs)
+	)
 
 	go func() {
-		txs := make(chan []*types.Transaction, 128)
-		pendingTxSub := api.events.SubscribePendingTxs(txs)
 		chainConfig := api.sys.backend.ChainConfig()
 
 		for {
@@ -214,11 +218,14 @@ func (api *FilterAPI) NewHeads(ctx context.Context) (*rpc.Subscription, error) {
 		return &rpc.Subscription{}, rpc.ErrNotificationsUnsupported
 	}
 
-	rpcSub := notifier.CreateSubscription()
+	// Install the filter before the subscription id goes back to the client.
+	var (
+		rpcSub     = notifier.CreateSubscription()
+		headers    = make(chan *types.Header)
+		headersSub = api.events.SubscribeNewHeads(headers)
+	)
 
 	go func() {
-		headers := make(chan *types.Header)
-		headersSub := api.events.SubscribeNewHeads(headers)
 
 		for {
 			select {

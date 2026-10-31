@@ -219,6 +219,7 @@ type BlockChain struct {
 	prefetcher Prefetcher
 	processor  Processor // Block transaction processor interface
 	forker     *ForkChoice
+	reorgs     reorgJournal // recent reorganisations, see RecentReorgs
 	vmConfig   vm.Config
 }
 
@@ -269,6 +270,7 @@ func NewBlockChain(db ethdb.Database, cacheConfig *CacheConfig, genesis *Genesis
 	}
 	bc.flushInterval.Store(int64(cacheConfig.TrieTimeLimit))
 	bc.forker = NewForkChoice(bc, shouldPreserve)
+	bc.forker.onRefuse = bc.recordRefusedReorg
 	bc.stateCache = state.NewDatabaseWithNodeDB(bc.db, bc.triedb)
 	bc.validator = NewBlockValidator(chainConfig, bc, engine)
 	bc.prefetcher = newStatePrefetcher(chainConfig, bc, engine)
@@ -2137,6 +2139,14 @@ func (bc *BlockChain) reorg(oldHead *types.Header, newHead *types.Block) error {
 		}
 		logFn(msg, "number", commonBlock.Number(), "hash", commonBlock.Hash(),
 			"drop", len(oldChain), "dropfrom", oldChain[0].Hash(), "add", len(newChain), "addfrom", newChain[0].Hash())
+		bc.reorgs.add(ReorgRecord{
+			ForkNumber: commonBlock.NumberU64(),
+			Dropped:    uint64(len(oldChain)),
+			Added:      uint64(len(newChain)),
+			OldHead:    oldChain[0].Hash(),
+			NewHead:    newChain[0].Hash(),
+			NewMiner:   newChain[0].Coinbase(),
+		})
 		blockReorgAddMeter.Mark(int64(len(newChain)))
 		blockReorgDropMeter.Mark(int64(len(oldChain)))
 		blockReorgMeter.Mark(1)
@@ -2493,4 +2503,11 @@ func (bc *BlockChain) SetBlockValidatorAndProcessorForTesting(v Validator, p Pro
 // It is thread-safe and can be called repeatedly without side effects.
 func (bc *BlockChain) SetTrieFlushInterval(interval time.Duration) {
 	bc.flushInterval.Store(int64(interval))
+}
+
+// SetMaxReorgDepth limits how many canonical blocks a reorg may drop while the
+// head is recent (0 means no limit); see ForkChoice.SetMaxReorgDepth. Call it
+// before the chain starts importing blocks.
+func (bc *BlockChain) SetMaxReorgDepth(depth uint64) {
+	bc.forker.SetMaxReorgDepth(depth)
 }

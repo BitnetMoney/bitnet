@@ -284,6 +284,15 @@ func testGetBlockHeaders(t *testing.T, protocol uint) {
 				backend.chain.GetBlockByNumber(1).Hash(),
 			},
 		},
+		// A request for zero headers gets nothing back. By hash this used to wrap
+		// the count around and read the whole chain (CVE-2024-32972).
+		{
+			&GetBlockHeadersPacket{Origin: HashOrNumber{Number: limit / 2}, Amount: 0},
+			[]common.Hash{},
+		}, {
+			&GetBlockHeadersPacket{Origin: HashOrNumber{Hash: backend.chain.GetBlockByNumber(limit / 2).Hash()}, Amount: 0},
+			[]common.Hash{},
+		},
 		// Check that non existing headers aren't returned
 		{
 			&GetBlockHeadersPacket{Origin: HashOrNumber{Hash: unknown}, Amount: 1},

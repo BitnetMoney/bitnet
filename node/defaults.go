@@ -44,19 +44,21 @@ var (
 
 // DefaultConfig contains reasonable default settings.
 var DefaultConfig = Config{
-	DataDir:             DefaultDataDir(),
-	HTTPPort:            DefaultHTTPPort,
-	AuthAddr:            DefaultAuthHost,
-	AuthPort:            DefaultAuthPort,
-	AuthVirtualHosts:    DefaultAuthVhosts,
-	HTTPModules:         []string{"net", "web3"},
-	HTTPVirtualHosts:    []string{"localhost"},
-	HTTPTimeouts:        rpc.DefaultHTTPTimeouts,
-	WSPort:              DefaultWSPort,
-	WSModules:           []string{"net", "web3"},
-	GraphQLVirtualHosts: []string{"localhost"},
+	DataDir:              DefaultDataDir(),
+	HTTPPort:             DefaultHTTPPort,
+	AuthAddr:             DefaultAuthHost,
+	AuthPort:             DefaultAuthPort,
+	AuthVirtualHosts:     DefaultAuthVhosts,
+	HTTPModules:          []string{"net", "web3"},
+	HTTPVirtualHosts:     []string{"localhost"},
+	HTTPTimeouts:         rpc.DefaultHTTPTimeouts,
+	WSPort:               DefaultWSPort,
+	WSModules:            []string{"net", "web3"},
+	GraphQLVirtualHosts:  []string{"localhost"},
+	BatchRequestLimit:    1000,
+	BatchResponseMaxSize: 25 * 1000 * 1000,
 	P2P: p2p.Config{
-		ListenAddr: ":30303",
+		ListenAddr: ":30210", // the port the Bitnet network uses
 		MaxPeers:   50,
 		NAT:        nat.Any(),
 	},

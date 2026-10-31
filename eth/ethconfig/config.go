@@ -68,7 +68,7 @@ var Defaults = Config{
 		DatasetsOnDisk:   2,
 		DatasetsLockMmap: false,
 	},
-	NetworkId:               1,
+	NetworkId:               210, // Bitnet
 	TxLookupLimit:           2350000,
 	LightPeers:              100,
 	UltraLightFraction:      75,
@@ -130,6 +130,10 @@ type Config struct {
 	NoPrefetch bool // Whether to disable prefetching and only load state on demand
 
 	TxLookupLimit uint64 `toml:",omitempty"` // The maximum number of blocks from head whose tx indices are reserved.
+
+	// MaxReorgDepth is how many canonical blocks a chain reorganisation may drop
+	// while the node is in sync; deeper ones are refused. 0 means no limit.
+	MaxReorgDepth uint64 `toml:",omitempty"`
 
 	// RequiredBlocks is a set of block number -> hash mappings which must be in the
 	// canonical chain of all remote peers. Setting the option makes geth verify the

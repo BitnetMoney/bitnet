@@ -178,6 +178,24 @@ func (p *Peer) dispatchResponse(res *Response, metadata func() interface{}) erro
 	}
 }
 
+// lookup asks the dispatcher for the pending request with the given id.
+type lookup struct {
+	id    uint64
+	reply chan *Request
+}
+
+// pendingRequest returns the pending request with the given id, or nil if there
+// is none (never sent, already answered, or cancelled).
+func (p *Peer) pendingRequest(id uint64) *Request {
+	op := &lookup{id: id, reply: make(chan *Request, 1)}
+	select {
+	case p.reqLookup <- op:
+		return <-op.reply
+	case <-p.term:
+		return nil
+	}
+}
+
 // dispatcher is a loop that accepts requests from higher layer packages, pushes
 // it to the network and tracks and dispatches the responses back to the original
 // requester.
@@ -197,6 +215,9 @@ func (p *Peer) dispatcher() {
 			if err == nil {
 				pending[req.id] = req
 			}
+
+		case op := <-p.reqLookup:
+			op.reply <- pending[op.id]
 
 		case cancelOp := <-p.reqCancel:
 			// Retrieve the pending request to cancel and short circuit if it

@@ -243,6 +243,8 @@ type TxPool struct {
 	chain       blockChain
 	gasPrice    *big.Int
 	txFeed      event.Feed
+	replaceFeed event.Feed        // see SubscribeReplacedTxsEvent
+	replaced    []ReplacedTxEvent // replacements to announce after the next reorg run
 	scope       event.SubscriptionScope
 	signer      types.Signer
 	mu          sync.RWMutex
@@ -782,6 +784,7 @@ func (pool *TxPool) add(tx *types.Transaction, local bool) (replaced bool, err e
 			pool.all.Remove(old.Hash())
 			pool.priced.Removed(1)
 			pendingReplaceMeter.Mark(1)
+			pool.replaced = append(pool.replaced, ReplacedTxEvent{Old: old, New: tx})
 		}
 		pool.all.Add(tx, isLocal)
 		pool.priced.Put(tx, isLocal)
@@ -855,6 +858,7 @@ func (pool *TxPool) enqueueTx(hash common.Hash, tx *types.Transaction, local boo
 		pool.all.Remove(old.Hash())
 		pool.priced.Removed(1)
 		queuedReplaceMeter.Mark(1)
+		pool.replaced = append(pool.replaced, ReplacedTxEvent{Old: old, New: tx})
 	} else {
 		// Nothing was replaced, bump the queued counter
 		queuedGauge.Inc(1)
@@ -911,6 +915,7 @@ func (pool *TxPool) promoteTx(addr common.Address, hash common.Hash, tx *types.T
 		pool.all.Remove(old.Hash())
 		pool.priced.Removed(1)
 		pendingReplaceMeter.Mark(1)
+		pool.replaced = append(pool.replaced, ReplacedTxEvent{Old: old, New: tx})
 	} else {
 		// Nothing was replaced, bump the pending counter
 		pendingGauge.Inc(1)
@@ -1281,7 +1286,14 @@ func (pool *TxPool) runReorg(done chan struct{}, reset *txpoolResetRequest, dirt
 
 	dropBetweenReorgHistogram.Update(int64(pool.changesSinceReorg))
 	pool.changesSinceReorg = 0 // Reset change counter
+	replaced := pool.replaced
+	pool.replaced = nil
 	pool.mu.Unlock()
+
+	// Announce replacements outside the lock, so a slow subscriber cannot hold up the pool
+	for _, ev := range replaced {
+		pool.replaceFeed.Send(ev)
+	}
 
 	// Notify subsystems for newly added transactions
 	for _, tx := range promoted {

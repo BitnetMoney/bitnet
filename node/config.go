@@ -193,6 +193,17 @@ type Config struct {
 	// AllowUnprotectedTxs allows non EIP-155 protected transactions to be send over RPC.
 	AllowUnprotectedTxs bool `toml:",omitempty"`
 
+	// BatchRequestLimit is the most calls one JSON-RPC batch over HTTP or WebSocket
+	// may contain, and BatchResponseMaxSize the most response bytes it may produce.
+	// 0 means no limit.
+	BatchRequestLimit    int `toml:",omitempty"`
+	BatchResponseMaxSize int `toml:",omitempty"`
+
+	// AllowUnsafePublicRPC lets the admin, debug, personal and miner APIs be served
+	// over HTTP or WebSocket on an address other machines can reach. Without it
+	// the node refuses to start with such a configuration.
+	AllowUnsafePublicRPC bool `toml:",omitempty"`
+
 	// JWTSecret is the path to the hex-encoded jwt secret.
 	JWTSecret string `toml:",omitempty"`
 

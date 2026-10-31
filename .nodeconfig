@@ -3,7 +3,11 @@ DataDir = "bitnet.db"
 IPCPath = "bitnet"
 
 [Node.P2P]
+# Nodes dialed directly over TCP. The GTPool node was shared for this purpose by
+# its operator on the Bitnet Discord (September 2025) and answered in October
+# 2026. The others are the original 2023 list, which no longer answered then.
 StaticNodes = [
+    "enode://1ddc9b1d98137a994fabdb0852abff266854cb376f81a197326f6a9287ffa10f9343565ce6f18f8eeda29ad38996b2da626ca0ac51829a456c8beabfc3e16560@65.21.65.38:32004",
     "enode://298d8c4ec54915c8bd64fa1a2c8e3dc878b2c64132299378131b38aedb5686d4f3521e5e636eb6f2f2ced80dc96df275b3e153ec40513ba9a35143c8c83e9441@195.20.234.201:30303",
     "enode://e837acbb6f6a5b76736d75cf17238b03d428cab8e62c6cbf327a830b3b0eada22f98bc0784c0208c940cbc1c51e6593873c2888289a40e771862e34a552cd252@74.208.172.80:30303",
     "enode://561982250c1fe77ad1f59d0f8651c931ee12a1494d87b17c54b74685959eeecdbcf48018fa0e5a7e1cbdc75878e417cd98c64269cdf619ee999a33dc726a087a@74.208.172.89:30303",

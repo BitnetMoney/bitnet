@@ -45,6 +45,9 @@ type Server struct {
 	mutex  sync.Mutex
 	codecs map[ServerCodec]struct{}
 	run    int32
+
+	batchRequestLimit    int
+	batchResponseMaxSize int
 }
 
 // NewServer creates a new server instance with no registered handlers.
@@ -59,6 +62,15 @@ func NewServer() *Server {
 	rpcService := &RPCService{server}
 	server.RegisterName(MetadataApi, rpcService)
 	return server
+}
+
+// SetBatchLimits limits batch requests: itemLimit is the most calls one batch may
+// contain, and maxResponseSize the most response bytes it may produce; 0 means no
+// limit. A batch with too many calls gets a single error; once the responses
+// exceed the size, the remaining calls get an error. Call it before serving.
+func (s *Server) SetBatchLimits(itemLimit, maxResponseSize int) {
+	s.batchRequestLimit = itemLimit
+	s.batchResponseMaxSize = maxResponseSize
 }
 
 // RegisterName creates a service for the given receiver type under the given name. When no
@@ -82,7 +94,7 @@ func (s *Server) ServeCodec(codec ServerCodec, options CodecOption) {
 	}
 	defer s.untrackCodec(codec)
 
-	c := initClient(codec, s.idgen, &s.services)
+	c := initClient(codec, s.idgen, &s.services, s.batchRequestLimit, s.batchResponseMaxSize)
 	<-codec.closed()
 	c.Close()
 }
@@ -115,6 +127,8 @@ func (s *Server) serveSingleRequest(ctx context.Context, codec ServerCodec) {
 	}
 
 	h := newHandler(ctx, codec, s.idgen, &s.services)
+	h.batchRequestLimit = s.batchRequestLimit
+	h.batchResponseMaxSize = s.batchResponseMaxSize
 	h.allowSubscribe = false
 	defer h.close(io.EOF, nil)
 

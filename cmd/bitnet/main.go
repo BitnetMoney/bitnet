@@ -28,6 +28,7 @@ import (
 	"github.com/ethereum/go-ethereum/console/prompt"
 	"github.com/ethereum/go-ethereum/eth"
 	"github.com/ethereum/go-ethereum/eth/downloader"
+	"github.com/ethereum/go-ethereum/eth/ethconfig"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/internal/debug"
 	"github.com/ethereum/go-ethereum/internal/ethapi"
@@ -87,6 +88,7 @@ var (
 		utils.GCModeFlag,
 		utils.SnapshotFlag,
 		utils.TxLookupLimitFlag,
+		utils.MaxReorgDepthFlag,
 		utils.LightServeFlag,
 		utils.LightIngressFlag,
 		utils.LightEgressFlag,
@@ -163,6 +165,9 @@ var (
 		utils.GraphQLVirtualHostsFlag,
 		utils.HTTPApiFlag,
 		utils.HTTPPathPrefixFlag,
+		utils.BatchRequestLimitFlag,
+		utils.BatchResponseMaxSizeFlag,
+		utils.AllowUnsafePublicRPCFlag,
 		utils.WSEnabledFlag,
 		utils.WSListenAddrFlag,
 		utils.WSPortFlag,
@@ -223,7 +228,8 @@ func init() {
 		makecacheCommand,
 		makedagCommand,
 		versionCommand,
-		versionCheckCommand,
+		// versionCheckCommand is not offered: it checks Geth's vulnerability list,
+		// whose version ranges do not match Bitnet's version numbers.
 		licenseCommand,
 		// See config.go
 		dumpConfigCommand,
@@ -269,15 +275,6 @@ func main() {
 func prepare(ctx *cli.Context) {
 	// If we're running a known preset, log it for convenience.
 	switch {
-	case ctx.IsSet(utils.RinkebyFlag.Name):
-		log.Info("Starting Geth on Rinkeby testnet...")
-
-	case ctx.IsSet(utils.GoerliFlag.Name):
-		log.Info("Starting Geth on Görli testnet...")
-
-	case ctx.IsSet(utils.SepoliaFlag.Name):
-		log.Info("Starting Geth on Sepolia testnet...")
-
 	case ctx.IsSet(utils.DeveloperFlag.Name):
 		log.Info("Starting Geth in ephemeral dev mode...")
 		log.Warn(`You are running Geth in --dev mode. Please note the following:
@@ -296,21 +293,11 @@ func prepare(ctx *cli.Context) {
      to 0, and discovery is disabled.
 `)
 
-	case !ctx.IsSet(utils.NetworkIdFlag.Name):
-		log.Info("Starting Geth on Ethereum mainnet...")
+	case !ctx.IsSet(utils.NetworkIdFlag.Name) || ctx.Uint64(utils.NetworkIdFlag.Name) == ethconfig.Defaults.NetworkId:
+		log.Info("Starting Bitnet node on Bitnet mainnet...")
 	}
-	// If we're a full node on mainnet without --cache specified, bump default cache allowance
-	if ctx.String(utils.SyncModeFlag.Name) != "light" && !ctx.IsSet(utils.CacheFlag.Name) && !ctx.IsSet(utils.NetworkIdFlag.Name) {
-		// Make sure we're not on any supported preconfigured testnet either
-		if !ctx.IsSet(utils.SepoliaFlag.Name) &&
-			!ctx.IsSet(utils.RinkebyFlag.Name) &&
-			!ctx.IsSet(utils.GoerliFlag.Name) &&
-			!ctx.IsSet(utils.DeveloperFlag.Name) {
-			// Nope, we're really on mainnet. Bump that cache up!
-			log.Info("Bumping default cache on mainnet", "provided", ctx.Int(utils.CacheFlag.Name), "updated", 4096)
-			ctx.Set(utils.CacheFlag.Name, strconv.Itoa(4096))
-		}
-	}
+	// Geth raises the default cache to 4 GB on Ethereum mainnet. Bitnet's state is
+	// small, and many nodes run on desktops, so the default 1 GB cache is kept.
 	// If we're running a light client on any network, drop the cache to some meaningfully low amount
 	if ctx.String(utils.SyncModeFlag.Name) == "light" && !ctx.IsSet(utils.CacheFlag.Name) {
 		log.Info("Dropping default light client cache", "provided", ctx.Int(utils.CacheFlag.Name), "updated", 128)
@@ -345,8 +332,6 @@ func geth(ctx *cli.Context) error {
 // it unlocks any requested accounts, and starts the RPC/IPC interfaces and the
 // miner.
 func startNode(ctx *cli.Context, stack *node.Node, backend ethapi.Backend, isConsole bool) {
-	debug.Memsize.Add("node", stack)
-
 	// Start up the node itself
 	utils.StartNode(ctx, stack, isConsole)
 

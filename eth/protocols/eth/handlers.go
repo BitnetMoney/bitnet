@@ -38,6 +38,9 @@ func handleGetBlockHeaders66(backend Backend, msg Decoder, peer *Peer) error {
 // ServiceGetBlockHeadersQuery assembles the response to a header query. It is
 // exposed to allow external packages to test protocol behavior.
 func ServiceGetBlockHeadersQuery(chain *core.BlockChain, query *GetBlockHeadersPacket, peer *Peer) []rlp.RawValue {
+	if query.Amount == 0 {
+		return nil
+	}
 	if query.Skip == 0 {
 		// The fast path: when the request is for a contiguous segment of headers.
 		return serviceContiguousBlockHeaderQuery(chain, query)
@@ -349,8 +352,12 @@ func handleNewBlock(backend Backend, msg Decoder, peer *Peer) error {
 
 func handleBlockHeaders66(backend Backend, msg Decoder, peer *Peer) error {
 	// A batch of headers arrived to one of our previous requests
-	res := new(BlockHeadersPacket66)
-	if err := msg.Decode(res); err != nil {
+	id, list, ok, err := readResponse(msg, peer, BlockHeadersMsg)
+	if err != nil || !ok {
+		return err
+	}
+	res := &BlockHeadersPacket66{RequestId: id}
+	if err := rlp.DecodeBytes(list, &res.BlockHeadersPacket); err != nil {
 		return fmt.Errorf("%w: message %v: %v", errDecode, msg, err)
 	}
 	metadata := func() interface{} {
@@ -369,8 +376,12 @@ func handleBlockHeaders66(backend Backend, msg Decoder, peer *Peer) error {
 
 func handleBlockBodies66(backend Backend, msg Decoder, peer *Peer) error {
 	// A batch of block bodies arrived to one of our previous requests
-	res := new(BlockBodiesPacket66)
-	if err := msg.Decode(res); err != nil {
+	id, list, ok, err := readResponse(msg, peer, BlockBodiesMsg)
+	if err != nil || !ok {
+		return err
+	}
+	res := &BlockBodiesPacket66{RequestId: id}
+	if err := rlp.DecodeBytes(list, &res.BlockBodiesPacket); err != nil {
 		return fmt.Errorf("%w: message %v: %v", errDecode, msg, err)
 	}
 	metadata := func() interface{} {
@@ -398,8 +409,12 @@ func handleBlockBodies66(backend Backend, msg Decoder, peer *Peer) error {
 
 func handleNodeData66(backend Backend, msg Decoder, peer *Peer) error {
 	// A batch of node state data arrived to one of our previous requests
-	res := new(NodeDataPacket66)
-	if err := msg.Decode(res); err != nil {
+	id, list, ok, err := readResponse(msg, peer, NodeDataMsg)
+	if err != nil || !ok {
+		return err
+	}
+	res := &NodeDataPacket66{RequestId: id}
+	if err := rlp.DecodeBytes(list, &res.NodeDataPacket); err != nil {
 		return fmt.Errorf("%w: message %v: %v", errDecode, msg, err)
 	}
 	return peer.dispatchResponse(&Response{
@@ -411,8 +426,12 @@ func handleNodeData66(backend Backend, msg Decoder, peer *Peer) error {
 
 func handleReceipts66(backend Backend, msg Decoder, peer *Peer) error {
 	// A batch of receipts arrived to one of our previous requests
-	res := new(ReceiptsPacket66)
-	if err := msg.Decode(res); err != nil {
+	id, list, ok, err := readResponse(msg, peer, ReceiptsMsg)
+	if err != nil || !ok {
+		return err
+	}
+	res := &ReceiptsPacket66{RequestId: id}
+	if err := rlp.DecodeBytes(list, &res.ReceiptsPacket); err != nil {
 		return fmt.Errorf("%w: message %v: %v", errDecode, msg, err)
 	}
 	metadata := func() interface{} {
@@ -511,8 +530,12 @@ func handleTransactions(backend Backend, msg Decoder, peer *Peer) error {
 		return nil
 	}
 	// Transactions can be processed, parse all of them and deliver to the pool
+	var raw rlp.RawValue
+	if err := msg.Decode(&raw); err != nil {
+		return fmt.Errorf("%w: message %v: %v", errDecode, msg, err)
+	}
 	var txs TransactionsPacket
-	if err := msg.Decode(&txs); err != nil {
+	if err := decodeLimitedList(raw, maxTransactionsPerMessage, &txs); err != nil {
 		return fmt.Errorf("%w: message %v: %v", errDecode, msg, err)
 	}
 	for i, tx := range txs {
@@ -531,8 +554,12 @@ func handlePooledTransactions66(backend Backend, msg Decoder, peer *Peer) error 
 		return nil
 	}
 	// Transactions can be processed, parse all of them and deliver to the pool
-	var txs PooledTransactionsPacket66
-	if err := msg.Decode(&txs); err != nil {
+	var env responseEnvelope
+	if err := msg.Decode(&env); err != nil {
+		return fmt.Errorf("%w: message %v: %v", errDecode, msg, err)
+	}
+	txs := PooledTransactionsPacket66{RequestId: env.RequestId}
+	if err := decodeLimitedList(env.List, maxTransactionsPerMessage, &txs.PooledTransactionsPacket); err != nil {
 		return fmt.Errorf("%w: message %v: %v", errDecode, msg, err)
 	}
 	for i, tx := range txs.PooledTransactionsPacket {

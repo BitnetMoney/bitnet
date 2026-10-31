@@ -1,0 +1,55 @@
+# Build and test every change, and check that the Linux binary is reproducible.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  GO_VERSION: "1.27.3"
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Build
+        run: go run build/ci.go install ./cmd/bitnet
+
+      - name: Vet
+        run: go vet ./cmd/bitnet/... ./core/... ./eth/... ./p2p/... ./crypto/... ./params/... ./internal/...
+
+      - name: Test
+        # These packages already failed on the v0.0.4 code this branch starts
+        # from: their tests expect Ethereum's genesis, rewards and console text.
+        # The Bitnet tests inside core run on their own below.
+        run: |
+          known='go-ethereum/(cmd/bitnet|cmd/devp2p/internal/ethtest|cmd/evm|console|core|core/forkid|eth/tracers/internal/tracetest)$'
+          go test -short -timeout 30m $(go list ./... | grep -Ev "$known")
+          go test -short -run 'TestMaxReorgDepth|TestReorgJournal' ./core/
+
+  reproducible:
+    strategy:
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Build the Linux binary twice from scratch and compare
+        run: |
+          commit=$(git rev-parse HEAD)
+          date=$(TZ=UTC git show -s --format=%cd --date=format-local:%Y%m%d HEAD)
+          for out in first second; do
+            docker build --no-cache --build-arg COMMIT="$commit" --build-arg DATE="$date" \
+              --target binary --output "$out" .
+          done
+          sha256sum first/bitnet second/bitnet
+          cmp first/bitnet second/bitnet

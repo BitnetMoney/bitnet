@@ -320,7 +320,7 @@ func (c *Console) Welcome() {
 
 	// Print some generic Geth metadata
 	if res, err := c.jsre.Run(`
-		var message = "Instance: Bitnet v0.0.5 \n";
+		var message = "Instance: " + web3.version.node + "\n";
 		try {
 			message += "Coinbase: " + eth.coinbase + "\n";
 		} catch (err) {}

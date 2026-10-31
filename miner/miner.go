@@ -176,7 +176,14 @@ func (miner *Miner) Mining() bool {
 }
 
 func (miner *Miner) Hashrate() uint64 {
-	if pow, ok := miner.engine.(consensus.PoW); ok {
+	// The proof-of-work engine sits inside the beacon wrapper, which does not
+	// pass Hashrate on, so look through it. Without this eth_hashrate and the
+	// ethstats report are always zero, for local threads and remote miners alike.
+	engine := miner.engine
+	if wrapper, ok := engine.(interface{ InnerEngine() consensus.Engine }); ok {
+		engine = wrapper.InnerEngine()
+	}
+	if pow, ok := engine.(consensus.PoW); ok {
 		return uint64(pow.Hashrate())
 	}
 	return 0
